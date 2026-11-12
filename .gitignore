@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# Secrets and personal data: never in a public repo
+.env
+.env.*
+!.env.example
+dados-pessoais/
+*.pdf
+
+.DS_Store
+.claude/
+.vercel
