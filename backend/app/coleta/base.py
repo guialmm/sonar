@@ -1,6 +1,7 @@
 """What every source turns its postings into, and the HTTP plumbing they share."""
 
 import asyncio
+import html
 import random
 import re
 import unicodedata
@@ -46,12 +47,14 @@ def assinatura(empresa: str, titulo: str) -> str:
 
 
 def texto_limpo(texto: str | None) -> str:
-    """Plain text from what sources send: HTML, entities, runs of blank lines."""
-    t = re.sub(r"<(br|/p|/ul|/ol|/h\d)\s*/?>", "\n", texto or "", flags=re.I)
+    """Plain text from what sources send: HTML (even escaped HTML), entities, blank-line runs."""
+    t = texto or ""
+    if "&lt;" in t and "<" not in t:  # Greenhouse escapes its HTML once more
+        t = html.unescape(t)
+    t = re.sub(r"<(br|/p|/ul|/ol|/h\d)\s*/?>", "\n", t, flags=re.I)
     t = re.sub(r"<li[^>]*>", "\n- ", t, flags=re.I)
     t = re.sub(r"<[^>]+>", " ", t)
-    for de, para in (("&nbsp;", " "), ("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"), ("&quot;", '"'), ("&#39;", "'")):
-        t = t.replace(de, para)
+    t = html.unescape(t).replace("\xa0", " ")
     t = "\n".join(" ".join(linha.split()) for linha in t.split("\n"))
     return re.sub(r"\n{3,}", "\n\n", t).strip()
 

@@ -1,0 +1,95 @@
+{
+ "jobs": [
+  {
+   "id": "4cd7c49f-9ba9-4eef-a712-3fd8ce2ddf26",
+   "title": "AI Security Manager ",
+   "department": "Engineer",
+   "team": "Engineer",
+   "employmentType": "FullTime",
+   "location": "São Paulo",
+   "secondaryLocations": [
+    {
+     "location": "Campinas",
+     "address": {
+      "postalAddress": {
+       "addressRegion": "São Paulo",
+       "addressCountry": "Brazil",
+       "addressLocality": "Campinas"
+      }
+     }
+    },
+    {
+     "location": "Belo Horizonte",
+     "address": {
+      "postalAddress": {
+       "addressRegion": "Minas Gerais",
+       "addressCountry": "Brazil",
+       "addressLocality": "Belo Horizonte"
+      }
+     }
+    },
+    {
+     "location": "Rio de Janeiro",
+     "address": {
+      "postalAddress": {
+       "addressRegion": "Rio de Janeiro",
+       "addressCountry": "Brazil",
+       "addressLocality": "Rio de Janeiro"
+      }
+     }
+    }
+   ],
+   "publishedAt": "2026-11-09T21:46:51.842+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "São Paulo",
+     "addressCountry": "Brazil",
+     "addressLocality": "São Paulo"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/nubank/4cd7c49f-9ba9-4eef-a712-3fd8ce2ddf26",
+   "applyUrl": "https://jobs.ashbyhq.com/nubank/4cd7c49f-9ba9-4eef-a712-3fd8ce2ddf26/application",
+   "descriptionHtml": "<h1><strong>About Nu</strong></h1><p style=\"min-height:1.5em\">Nu serves more than 140 million customers, guided by a mission to fight complexity and empower people. The company has been leading an industry transformation through innovative products and human-centered services.</p><div style=\"min-height:1.2em;margin-top:0px;margin-bottom:0px\"> </div><p style=\"min-height:1.5em\">Proprietary technology and data at scale power Nu’s digital platform, built to promote financial access, advancement, and transparency. Its business model thrives on customer love and lower costs, feeding a flywheel of growth and profitability.<br /><br />Visit our<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://www.nu.com/2026-en\"> Institutional Page</a></p><h2><strong>About the role</strong></h2><p style=\"min-height:1.5em\">As an AI Security Manager, you will lead the AI Security team, part of Nubank’s Information Security organization. The team’s mission is to help Nubank adopt and develop artificial intelligence securely, protecting the company and the people who rely on its products.</p><p style=\"min-height:1.5em\">AI is used across Nubank in internal tools, AI-assisted software developme",
+   "descriptionPlain": "ABOUT NU\n\nNu serves more than 140 million customers, guided by a mission to fight complexity and empower people. The company has been leading an industry transformation through innovative products and human-centered services.\n\n \n\nProprietary technology and data at scale power Nu’s digital platform, built to promote financial access, advancement, and transparency. Its business model thrives on customer love and lower costs, feeding a flywheel of growth and profitability.\n\nVisit our Institutional Page https://www.nu.com/2026-en\n\n\nABOUT THE ROLE\n\nAs an AI Security Manager, you will lead the AI Se"
+  },
+  {
+   "id": "ce6b809f-687c-4efa-98cf-e737cd0f6bf6",
+   "title": "Head of Risk US",
+   "department": "Executive",
+   "team": "Executive",
+   "employmentType": "FullTime",
+   "location": "Miami",
+   "secondaryLocations": [
+    {
+     "location": "Virginia",
+     "address": {
+      "postalAddress": {
+       "addressRegion": "Virginia",
+       "addressCountry": "United States",
+       "addressLocality": "Virginia"
+      }
+     }
+    }
+   ],
+   "publishedAt": "2026-11-09T21:05:02.549+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "Florida",
+     "addressCountry": "United States",
+     "addressLocality": "Miami"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/nubank/ce6b809f-687c-4efa-98cf-e737cd0f6bf6",
+   "applyUrl": "https://jobs.ashbyhq.com/nubank/ce6b809f-687c-4efa-98cf-e737cd0f6bf6/application",
+   "descriptionHtml": "<h1><strong>About Nu</strong></h1><p style=\"min-height:1.5em\">Nu serves more than 140 million customers, guided by a mission to fight complexity and empower people. The company has been leading an industry transformation through innovative products and human-centered services.</p><div style=\"min-height:1.2em;margin-top:0px;margin-bottom:0px\"> </div><p style=\"min-height:1.5em\">Proprietary technology and data at scale power Nu’s digital platform, built to promote financial access, advancement, and transparency. Its business model thrives on customer love and lower costs, feeding a flywheel of growth and profitability.<br /><br />Visit our<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://www.nu.com/2026-en\"> Institutional Page</a></p><h1><strong>About the Team</strong></h1><p style=\"min-height:1.5em\">The Global Risk function at Nu is structured around two dimensions: country risk officers (horizontal) and global functional heads by risk discipline (vertical). This matrix creates a \"risk surface\" that allows the organization to scale efficiently without duplicating senior expertise across geographies.</p><p style=\"min-height:1.5em\">The <strong>Head of Risk US </strong",
+   "descriptionPlain": "ABOUT NU\n\nNu serves more than 140 million customers, guided by a mission to fight complexity and empower people. The company has been leading an industry transformation through innovative products and human-centered services.\n\n \n\nProprietary technology and data at scale power Nu’s digital platform, built to promote financial access, advancement, and transparency. Its business model thrives on customer love and lower costs, feeding a flywheel of growth and profitability.\n\nVisit our Institutional Page https://www.nu.com/2026-en\n\n\nABOUT THE TEAM\n\nThe Global Risk function at Nu is structured aroun"
+  }
+ ],
+ "apiVersion": "1"
+}

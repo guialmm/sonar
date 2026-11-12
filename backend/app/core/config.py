@@ -29,6 +29,14 @@ class Settings(BaseSettings):
         "vuejs-br/vagas", "qa-brasil/vagas", "flutterbr/vagas", "nodejsdevbr/vagas",
     ]
     github_token: str = ""  # optional locally (60 requests/hour without); GITHUB_TOKEN in Actions
+    # Company career pages on applicant-tracking systems with public APIs: the posting straight
+    # from the employer, no middleman. Board token → company name.
+    greenhouse_empresas: dict[str, str] = {
+        "stone": "Stone", "c6bank": "C6 Bank", "inter": "Banco Inter", "xpinc": "XP Inc.",
+        "quintoandar": "QuintoAndar", "gympass": "Wellhub (Gympass)", "vtex": "VTEX", "ebanx": "EBANX",
+        "jusbrasil": "Jusbrasil", "wildlifestudios": "Wildlife Studios", "rdstation": "RD Station",
+    }
+    ashby_empresas: dict[str, str] = {"nubank": "Nubank"}
 
     # LLM (Gemini free tier; models tried in order when one is overloaded)
     gemini_api_key: str = ""
