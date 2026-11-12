@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Computed, DateTime, Enum, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Computed, DateTime, Enum, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -59,6 +59,12 @@ class Vaga(TimestampMixin, Base):
     vista_ultimo_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     vezes_vista: Mapped[int] = mapped_column(Integer, default=1)
 
+    # Ghost-job detector (app/confianca.py): 0-100, the reasons behind it, and whether the
+    # source still lists the posting.
+    confianca: Mapped[int | None] = mapped_column(Integer, index=True)
+    sinais: Mapped[list] = mapped_column(JSONB, default=list, server_default="[]")
+    ativa: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true", index=True)
+
     # Normalized "company | title": the same opening reposted under a new id shares it.
     assinatura: Mapped[str] = mapped_column(String(400), index=True)
     raw: Mapped[dict] = mapped_column(JSONB)
@@ -82,3 +88,5 @@ class Coleta(Base):
     vistas: Mapped[int] = mapped_column(Integer, default=0)
     novas: Mapped[int] = mapped_column(Integer, default=0)
     erro: Mapped[str | None] = mapped_column(Text)
+    # False when run for a subset (some terms, some boards): it can't tell what was taken down.
+    completa: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")

@@ -59,10 +59,12 @@ async def salvar(session: AsyncSession, vagas: list[VagaColetada], agora: dateti
     return sum(1 for (inserida,) in resultado if inserida)
 
 
-async def coletar_fonte(session: AsyncSession, fonte: Fonte, vagas: AsyncIterable[VagaColetada]) -> Coleta:
+async def coletar_fonte(
+    session: AsyncSession, fonte: Fonte, vagas: AsyncIterable[VagaColetada], completa: bool = True
+) -> Coleta:
     """Runs one source to the end, in batches, and logs the run (with the error, if any)."""
     agora = datetime.now(UTC)
-    coleta = Coleta(fonte=fonte, iniciada_em=agora, vistas=0, novas=0)
+    coleta = Coleta(fonte=fonte, iniciada_em=agora, vistas=0, novas=0, completa=completa)
     session.add(coleta)
     await session.commit()
     coleta_id = coleta.id

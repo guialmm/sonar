@@ -12,7 +12,7 @@ import asyncio
 import sys
 
 import httpx
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 
 from app.coleta import empresas, github, gupy
 from app.coleta.servico import coletar_fonte
@@ -21,13 +21,20 @@ from app.core.db import SessionLocal, engine
 from app.models import Coleta, Fonte, Modalidade, Vaga
 
 
+async def marcar_incompleta(session, coleta: Coleta, falhas: list[str]) -> None:
+    """A board that failed wasn't read: its postings must not look taken down."""
+    if falhas:
+        await session.execute(update(Coleta).where(Coleta.id == coleta.id).values(completa=False))
+        await session.commit()
+
+
 async def main() -> None:
     comando, *args = sys.argv[1:] or ["status"]
     headers = {"User-Agent": settings.agente_http}
     async with SessionLocal() as session:
         if comando in ("gupy", "todas"):
             async with httpx.AsyncClient(headers=headers, timeout=settings.coleta_timeout_s) as http:
-                c = await coletar_fonte(session, Fonte.gupy, gupy.coletar(http, (comando == "gupy" and args) or settings.gupy_termos))
+                c = await coletar_fonte(session, Fonte.gupy, gupy.coletar(http, (comando == "gupy" and args) or settings.gupy_termos), completa=not args)
             print(f"gupy: {c.vistas} vistas, {c.novas} novas")
         if comando in ("github", "todas"):
             h = headers | {"Accept": "application/vnd.github+json"}
@@ -35,7 +42,8 @@ async def main() -> None:
                 h["Authorization"] = f"Bearer {settings.github_token}"
             falhas: list[str] = []
             async with httpx.AsyncClient(headers=h, timeout=github.TIMEOUT_S) as http:
-                c = await coletar_fonte(session, Fonte.github, github.coletar(http, (comando == "github" and args) or settings.github_repos, falhas))
+                c = await coletar_fonte(session, Fonte.github, github.coletar(http, (comando == "github" and args) or settings.github_repos, falhas), completa=not args)
+            await marcar_incompleta(session, c, falhas)
             print(f"github: {c.vistas} vistas, {c.novas} novas" + (f" · falharam: {', '.join(falhas)}" if falhas else ""))
         if comando in ("empresas", "todas"):
             async with httpx.AsyncClient(headers=headers, timeout=settings.coleta_timeout_s) as http:
@@ -45,6 +53,7 @@ async def main() -> None:
                 ):
                     falhas = []
                     c = await coletar_fonte(session, fonte, coletor(http, lista, falhas))
+                    await marcar_incompleta(session, c, falhas)
                     print(f"{fonte.value}: {c.vistas} vistas, {c.novas} novas" + (f" · falharam: {', '.join(falhas)}" if falhas else ""))
         if comando not in ("gupy", "github", "empresas", "todas", "status"):
             sys.exit(f"comando desconhecido: {comando}")
