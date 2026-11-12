@@ -105,3 +105,9 @@ async def test_coleta_registra_erro_e_guarda_o_que_ja_veio(session):
     c = (await session.scalars(select(Coleta))).one()
     assert c.erro.startswith("ConnectError") and c.terminada_em is not None
     assert c.vistas == 200 and c.novas == 200  # the first full batch was committed before the failure
+
+
+async def test_mesma_vaga_duas_vezes_no_lote(session):
+    assert await salvar(session, [vaga(7), vaga(7, titulo="Dev Python Pleno")], datetime.now(UTC)) == 1
+    await session.commit()
+    assert (await session.scalars(select(Vaga))).one().titulo == "Dev Python Pleno"

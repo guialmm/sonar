@@ -25,6 +25,7 @@ def _linha(v: VagaColetada, agora: datetime) -> dict:
         "pais": v.pais,
         "modalidade": v.modalidade,
         "descricao": v.descricao,
+        "etiquetas": v.etiquetas,
         "publicada_em": v.publicada_em,
         "prazo": v.prazo,
         "vista_primeiro_em": agora,
@@ -37,6 +38,9 @@ def _linha(v: VagaColetada, agora: datetime) -> dict:
 
 async def salvar(session: AsyncSession, vagas: list[VagaColetada], agora: datetime) -> int:
     """Upsert one batch; returns how many postings were new."""
+    # One posting twice in a batch (pagination shifting under us) would make Postgres refuse
+    # the whole upsert ("cannot affect row a second time"): keep the last copy.
+    vagas = list({(v.fonte, v.id_externo): v for v in vagas}.values())
     if not vagas:
         return 0
     stmt = insert(Vaga).values([_linha(v, agora) for v in vagas])
@@ -46,7 +50,7 @@ async def salvar(session: AsyncSession, vagas: list[VagaColetada], agora: dateti
         set_={
             # The source may edit a posting; what we observed first never changes.
             **{c: getattr(novo, c) for c in ("url", "titulo", "empresa", "cidade", "estado", "pais", "modalidade",
-                                              "descricao", "publicada_em", "prazo", "assinatura", "raw")},
+                                              "descricao", "etiquetas", "publicada_em", "prazo", "assinatura", "raw")},
             "vista_ultimo_em": novo.vista_ultimo_em,
             "vezes_vista": Vaga.vezes_vista + 1,
         },

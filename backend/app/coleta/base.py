@@ -27,6 +27,7 @@ class VagaColetada:
     pais: str | None = None
     publicada_em: datetime | None = None
     prazo: datetime | None = None
+    etiquetas: list[str] = field(default_factory=list)
     raw: dict = field(default_factory=dict)
 
 

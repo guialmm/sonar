@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Computed, DateTime, Enum, Index, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, TimestampMixin
@@ -49,6 +49,8 @@ class Vaga(TimestampMixin, Base):
     pais: Mapped[str | None] = mapped_column(String(80))
     modalidade: Mapped[Modalidade] = mapped_column(pg_enum(Modalidade), default=Modalidade.nao_informado)
     descricao: Mapped[str] = mapped_column(Text)
+    # Labels the source attaches (GitHub boards: "Remoto", "Júnior", "PJ", "Python", "verificada").
+    etiquetas: Mapped[list[str]] = mapped_column(ARRAY(String(80)), default=list, server_default="{}")
 
     publicada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     prazo: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

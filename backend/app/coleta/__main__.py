@@ -2,6 +2,7 @@
 
     python -m app.coleta gupy            # all configured terms
     python -m app.coleta gupy python     # just these terms
+    python -m app.coleta github          # community boards (GITHUB_TOKEN raises the rate limit)
     python -m app.coleta status
 """
 
@@ -11,7 +12,7 @@ import sys
 import httpx
 from sqlalchemy import func, select
 
-from app.coleta import gupy
+from app.coleta import github, gupy
 from app.coleta.servico import coletar_fonte
 from app.core.config import settings
 from app.core.db import SessionLocal, engine
@@ -26,6 +27,14 @@ async def main() -> None:
             async with httpx.AsyncClient(headers=headers, timeout=settings.coleta_timeout_s) as http:
                 c = await coletar_fonte(session, Fonte.gupy, gupy.coletar(http, args or settings.gupy_termos))
             print(f"gupy: {c.vistas} vistas, {c.novas} novas em {(c.terminada_em - c.iniciada_em).seconds}s")
+        elif comando == "github":
+            headers = {"User-Agent": settings.agente_http, "Accept": "application/vnd.github+json"}
+            if settings.github_token:
+                headers["Authorization"] = f"Bearer {settings.github_token}"
+            falhas: list[str] = []
+            async with httpx.AsyncClient(headers=headers, timeout=github.TIMEOUT_S) as http:
+                c = await coletar_fonte(session, Fonte.github, github.coletar(http, args or settings.github_repos, falhas))
+            print(f"github: {c.vistas} vistas, {c.novas} novas" + (f" · falharam: {', '.join(falhas)}" if falhas else ""))
         elif comando == "status":
             por_fonte = (await session.execute(select(Vaga.fonte, func.count()).group_by(Vaga.fonte))).all()
             por_modalidade = (await session.execute(select(Vaga.modalidade, func.count()).group_by(Vaga.modalidade))).all()

@@ -21,6 +21,14 @@ class Settings(BaseSettings):
         "desenvolvedor", "programador", "engenheiro de software", "software", "back-end", "front-end",
         "full stack", "python", "java", "javascript", "dados", "devops", "qa", "estágio ti", "suporte ti",
     ]
+    # Community job boards kept as GitHub issues. Some went quiet years ago with issues still
+    # open: they stay in, and the ghost-job detector marks those postings.
+    github_repos: list[str] = [
+        "backend-br/vagas", "frontendbr/vagas", "soujava/vagas-java", "CocoaHeadsBrasil/vagas",
+        "react-brasil/vagas", "phpdevbr/vagas", "datascience-br/vagas", "androiddevbr/vagas",
+        "vuejs-br/vagas", "qa-brasil/vagas", "flutterbr/vagas", "nodejsdevbr/vagas",
+    ]
+    github_token: str = ""  # optional locally (60 requests/hour without); GITHUB_TOKEN in Actions
 
     # LLM (Gemini free tier; models tried in order when one is overloaded)
     gemini_api_key: str = ""

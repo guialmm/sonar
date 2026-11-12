@@ -1,0 +1,125 @@
+[
+ {
+  "number": 12494,
+  "title": "[Remoto] Desenvolvedor(a) Backend Pleno - White Label e Plataforma - Mimix AI",
+  "html_url": "https://github.com/backend-br/vagas/issues/12494",
+  "created_at": "2026-11-09T12:03:33Z",
+  "updated_at": "2026-11-09T12:29:40Z",
+  "comments": 1,
+  "labels": [
+   {
+    "name": "PJ"
+   },
+   {
+    "name": "Pleno"
+   },
+   {
+    "name": "Remoto"
+   },
+   {
+    "name": "verificada"
+   }
+  ],
+  "body": "### Sobre a empresa\n\nA Mimix AI desenvolve uma plataforma de software para gerenciar operações white label de clientes do setor de robótica. A plataforma organiza a publicação de tarefas, o acompanhamento de envios e os repasses aos participantes.\n\n### Site da empresa\n\nhttps://www.mimix-ai.xyz\n\n### Descrição da vaga\n\nBuscamos uma pessoa desenvolvedora backend pleno para manter os serviços e as integrações das operações white label da Mimix AI e implementar novas funcionalidades da plataforma. O ",
+  "user": {
+   "login": "moneymagic"
+  },
+  "pull_request": null
+ },
+ {
+  "number": 12493,
+  "title": "[Remoto] Desenvolvedor(a) Back-end Júnior - Python / AI Coding & Agentic AI - MKdigital",
+  "html_url": "https://github.com/backend-br/vagas/issues/12493",
+  "created_at": "2026-11-07T20:58:13Z",
+  "updated_at": "2026-11-11T21:42:16Z",
+  "comments": 11,
+  "labels": [
+   {
+    "name": "PJ"
+   },
+   {
+    "name": "Júnior"
+   },
+   {
+    "name": "JavaScript"
+   },
+   {
+    "name": "Python"
+   },
+   {
+    "name": "Remoto"
+   },
+   {
+    "name": "Testes automatizados"
+   },
+   {
+    "name": "TypeScript"
+   },
+   {
+    "name": "PostgreSQL"
+   },
+   {
+    "name": "SQL"
+   },
+   {
+    "name": "Git"
+   },
+   {
+    "name": "Linux"
+   },
+   {
+    "name": "Docker"
+   },
+   {
+    "name": "CI/CD"
+   },
+   {
+    "name": "Contrato"
+   },
+   {
+    "name": "verificada"
+   },
+   {
+    "name": "FastAPI"
+   }
+  ],
+  "body": "### Sobre a empresa\n\nA MKdigital é uma startup suíça de tecnologia e inteligência artificial, com foco em automação de processos empresariais e aplicações de engenharia industrial.\n\nEsta publicação corresponde a **uma única oportunidade de desenvolvimento de software**, com foco em backend, APIs, dados e agentes inteligentes. A pessoa selecionada colaborará em duas frentes de produto da MKdigital: AI Bookkeeping Assistant e Plant Brownfield Reconstruction Agent.\n\n### Site da empresa\n\nhttps://www",
+  "user": {
+   "login": "marcelokipper04"
+  },
+  "pull_request": null
+ },
+ {
+  "number": 12484,
+  "title": "[Híbrido] Sr Software Engineer - Stealth",
+  "html_url": "https://github.com/backend-br/vagas/issues/12484",
+  "created_at": "2026-10-26T14:47:20Z",
+  "updated_at": "2026-11-12T17:53:12Z",
+  "comments": 3,
+  "labels": [
+   {
+    "name": "PJ"
+   },
+   {
+    "name": "Sênior"
+   },
+   {
+    "name": "Go"
+   },
+   {
+    "name": "AWS"
+   },
+   {
+    "name": "Híbrido"
+   },
+   {
+    "name": "verificada"
+   }
+  ],
+  "body": "### Sobre a empresa\n\nOportunidade em uma startup ainda em stealth, com foco em backend e construção de produtos com IA. A posição tem bastante autonomia, proximidade com os fundadores e impacto direto nas decisões técnicas e de produto.\n\n### Site da empresa\n\nhttps://forms.gle/45hRpfEdqzKRGYAY6\n\n### Descrição da vaga\n\nPrincipais responsabilidades:\n\n• Participar das decisões de arquitetura, modelagem de dados e desenho de sistemas;\n• Desenvolver o core do produto;\n• Construir uma infraestrutura se",
+  "user": {
+   "login": "hireflowhq"
+  },
+  "pull_request": null
+ }
+]
