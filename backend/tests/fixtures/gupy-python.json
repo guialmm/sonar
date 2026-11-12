@@ -1,0 +1,69 @@
+{
+ "data": [
+  {
+   "id": 12875171,
+   "name": "Desenvolvedor Python Sênior (Foco em IA)",
+   "applicationDeadline": "2027-01-10T00:00:00.000Z",
+   "description": "A FCamara apoiando empresas disruptivas por meio de soluções digitais completas e escaláveis alinhadas às principais tendências e necessidades do mercado. Temos uma cultura poderosa, conectados de ponta a ponta, colaborativos, ágeis e flexíveis para encarar o novo, transparentes em nossas ações e unidos por um grande propósito: Revolucionar negócios e impactar pessoas, resolvendo desafios complexos através da nossa cultura e tecnologia. Além disso, somos certificados pela GPTW pelo segundo ano consecutivo, sendo uma das melhores empresas para se trabalhar no Brasil.Próximos dos clientes, apaix",
+   "careerPageName": "VENHA SER #SANGUELARANJA 🧡🚀",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/50527/career/117226/images/2022-12-05_17-18_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-11-12T17:52:40.343Z",
+   "workplaceType": "remote",
+   "city": "",
+   "state": "",
+   "jobUrl": "https://fcamara.gupy.io/job/eyJqb2JJZCI6MTI4NzUxNzEsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12871642,
+   "name": "ANALISTA DESENVOLVEDOR PYTHON",
+   "applicationDeadline": "2027-01-10T00:00:00.000Z",
+   "description": "No Grupo Stefanini, acreditamos no poder da colaboração. Co-criamos soluções inovadoras em parceria com nossos clientes, combinando tecnologia de ponta, inteligência artificial e a criatividade humana. Estamos na vanguarda da resolução de problemas de negócios, proporcionando impacto real em escala global.Ao se juntar à Stefanini, você se torna parte de uma jornada global de transformação. Estamos empenhados em criar impacto positivo não apenas nos negócios, mas também na vida de nossos colaboradores. Se você procura uma oportunidade de crescimento profissional em uma empresa que valoriza inov",
+   "careerPageName": "Stefanini Group",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/39703/career/84556/images/2024-10-08_17-35_companyLogoUrl.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-11-11T13:23:29.933Z",
+   "workplaceType": "hybrid",
+   "city": "Araras",
+   "state": "São Paulo",
+   "jobUrl": "https://stefanini.gupy.io/job/eyJqb2JJZCI6MTI4NzE2NDIsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  },
+  {
+   "id": 12843282,
+   "name": "DESENVOLVEDOR PYTHON",
+   "applicationDeadline": "2027-01-31T00:00:00.000Z",
+   "description": "Você é apaixonado pela área de Tecnologia da Informação?Gostaria de trabalhar em uma grande empresa?Então venha com a gente construir experiências lindas para os nossos clientes!Cadastre-se em nossa oportunidade de Desenvolvedor Python.Gostaríamos muito de conhecer você!Responsabilidades e atribuiçõesDesenvolver scripts e aplicações utilizando Python para automação e otimização de processos internos\n;\n\nUtilizar e gerenciar bibliotecas Python para manipulação de dados, integração entre sistemas e automação de tarefas;\n\nDesenvolver integrações entre diferentes sistemas por meio de APIs REST;\n\nRe",
+   "careerPageName": "Grupo Roma Brasil",
+   "careerPageLogo": "https://attachments.gupy.io/production/companies/40198/career/85814/images/2022-08-19_12-02_logo.png",
+   "careerPageUrl": "",
+   "type": "vacancy_type_effective",
+   "publishedDate": "2026-11-05T18:48:01.505Z",
+   "workplaceType": "on-site",
+   "city": "Belo Horizonte",
+   "state": "Minas Gerais",
+   "jobUrl": "https://gruporomabrasil.gupy.io/job/eyJqb2JJZCI6MTI4NDMyODIsInNvdXJjZSI6Imd1cHlfcG9ydGFsIn0=?jobBoardSource=gupy_portal",
+   "badges": {
+    "friendlyBadge": true,
+    "isPWD": true
+   },
+   "disabilities": true
+  }
+ ],
+ "pagination": {
+  "total": 18,
+  "limit": 3,
+  "offset": 0
+ }
+}
