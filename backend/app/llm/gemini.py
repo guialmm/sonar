@@ -32,6 +32,10 @@ TRANSITORIOS = {429, 500, 503, 504}
 # Models that just failed sit out for a while, shared by every request of the process:
 # without it, each step of an agent conversation would wait on the same dead model again.
 RESFRIAMENTO_S = 300
+
+MODELO_EMBEDDINGS = "gemini-embedding-001"
+DIMENSOES = 768  # truncated from 3072: plenty for job texts, a quarter of the storage
+LOTE_EMBEDDINGS = 100
 FORA_DE_USO: dict[str, float] = {}
 
 
@@ -193,3 +197,34 @@ class GeminiLLM:
                 )
             contents.append(types.Content(role="user", parts=respostas))
         raise LLMErro(f"{modelo} não respondeu em {max_passos} passos")
+
+    # --- Embeddings -------------------------------------------------------
+
+    async def embeddings(self, textos: list[str], *, tipo: str = "RETRIEVAL_DOCUMENT") -> list[list[float]]:
+        """One vector per text, in batches. RETRIEVAL_DOCUMENT for what is searched (postings),
+        RETRIEVAL_QUERY for what searches (a profile)."""
+        config = types.EmbedContentConfig(output_dimensionality=DIMENSOES, task_type=tipo)
+        vetores: list[list[float]] = []
+        for i in range(0, len(textos), LOTE_EMBEDDINGS):
+            lote = textos[i : i + LOTE_EMBEDDINGS]
+            ultimo = ""
+            for rodada in range(self.max_rodadas):
+                try:
+                    r = await asyncio.wait_for(
+                        self.client.aio.models.embed_content(model=MODELO_EMBEDDINGS, contents=lote, config=config),
+                        self.timeout_agente_s,
+                    )
+                    vetores.extend(e.values for e in r.embeddings)
+                    break
+                except TimeoutError:
+                    ultimo = "sem resposta"
+                except httpx.TransportError as exc:
+                    ultimo = f"rede ({type(exc).__name__})"
+                except errors.APIError as exc:
+                    if exc.code not in TRANSITORIOS:
+                        raise LLMErro(f"embeddings: {exc.code} {exc.message}") from exc
+                    ultimo = str(exc.code)
+                await self.sleep(min(5 * 2**rodada, 60) + random.uniform(0, 2))
+            else:
+                raise LLMIndisponivel(f"embeddings falharam {self.max_rodadas}x (último: {ultimo})")
+        return vetores

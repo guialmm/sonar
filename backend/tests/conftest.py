@@ -3,6 +3,7 @@ import os
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://sonar:sonar@localhost:5436/sonar_test")
 os.environ["ENV"] = "test"
 
+import io  # noqa: E402
 import json  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -22,6 +23,7 @@ def fixture(nome: str):
 @pytest.fixture(scope="session", autouse=True)
 async def schema():
     async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -44,3 +46,34 @@ async def session():
 
 async def sem_espera(_):
     pass
+
+def make_pdf(pages: list[str]) -> bytes:
+    """A real, minimal PDF with one line of Helvetica text per page (ASCII only)."""
+    objs: list[bytes] = []
+    kids = " ".join(f"{3 + 2 * i} 0 R" for i in range(len(pages)))
+    objs.append(b"<< /Type /Catalog /Pages 2 0 R >>")
+    objs.append(f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>".encode())
+    font_ref = 3 + 2 * len(pages)
+    for i, page in enumerate(pages):
+        lines = page.replace("(", r"\(").replace(")", r"\)").split("\n")
+        ops = "BT /F1 11 Tf 14 TL 40 800 Td " + " ".join(f"({ln}) Tj T*" for ln in lines) + " ET"
+        objs.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] "
+            f"/Resources << /Font << /F1 {font_ref} 0 R >> >> /Contents {4 + 2 * i} 0 R >>".encode()
+        )
+        objs.append(f"<< /Length {len(ops)} >>\nstream\n{ops}\nendstream".encode())
+    objs.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+
+    out = io.BytesIO()
+    out.write(b"%PDF-1.4\n")
+    offsets = []
+    for n, obj in enumerate(objs, start=1):
+        offsets.append(out.tell())
+        out.write(f"{n} 0 obj\n".encode() + obj + b"\nendobj\n")
+    xref = out.tell()
+    out.write(f"xref\n0 {len(objs) + 1}\n0000000000 65535 f \n".encode())
+    out.write(b"".join(f"{o:010d} 00000 n \n".encode() for o in offsets))
+    out.write(f"trailer\n<< /Size {len(objs) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF".encode())
+    return out.getvalue()
+
+

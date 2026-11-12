@@ -131,3 +131,26 @@ async def test_conexao_que_cai_passa_para_o_proximo_modelo():
     g = GeminiLLM("k", ["novo", "estavel"], client=fake)
     r = await g.estruturado(sistema="s", conteudo="c", esquema=Nota)
     assert r.uso.modelo == "estavel" and r.dados.nota == 7
+
+
+async def test_embeddings_em_lotes_com_retentativa():
+    from app.llm import gemini as g
+
+    chamadas = []
+
+    async def embed(*, model, contents, config):
+        chamadas.append(len(contents))
+        if len(chamadas) == 2:
+            raise erro(503)
+        return SimpleNamespace(embeddings=[SimpleNamespace(values=[float(len(t))]) for t in contents])
+
+    fake = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(embed_content=embed)))
+
+    async def sem_espera(_):
+        pass
+
+    llm = GeminiLLM("k", ["m"], client=fake, sleep=sem_espera)
+    textos = ["ab"] * (g.LOTE_EMBEDDINGS + 3)
+    vetores = await llm.embeddings(textos)
+    assert len(vetores) == len(textos) and vetores[0] == [2.0]
+    assert chamadas == [g.LOTE_EMBEDDINGS, 3, 3]  # the second batch failed once and was retried

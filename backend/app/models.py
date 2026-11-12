@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Computed, DateTime, Enum, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, TimestampMixin
@@ -35,6 +36,9 @@ class Vaga(TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("fonte", "id_externo"),
         Index("ix_vagas_busca", "busca", postgresql_using="gin"),
+        Index(
+            "ix_vagas_embedding", "embedding", postgresql_using="hnsw", postgresql_ops={"embedding": "vector_cosine_ops"}
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -64,6 +68,11 @@ class Vaga(TimestampMixin, Base):
     confianca: Mapped[int | None] = mapped_column(Integer, index=True)
     sinais: Mapped[list] = mapped_column(JSONB, default=list, server_default="[]")
     ativa: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true", index=True)
+
+    # Meaning of the posting for semantic search (gemini-embedding-001, 768 dims), and a hash of
+    # the text it was computed from, so an edited posting gets a fresh vector.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(768))
+    embedding_hash: Mapped[str | None] = mapped_column(String(40))
 
     # Normalized "company | title": the same opening reposted under a new id shares it.
     assinatura: Mapped[str] = mapped_column(String(400), index=True)
