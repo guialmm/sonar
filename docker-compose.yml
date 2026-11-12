@@ -1,0 +1,19 @@
+# Local infra: Postgres with pgvector (job embeddings).
+#   docker compose up -d db
+# Port 5436, next to the other portfolio projects' databases.
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    ports: ["5436:5432"]
+    volumes: [pg_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar"]
+      interval: 3s
+      retries: 10
+
+volumes:
+  pg_data:
