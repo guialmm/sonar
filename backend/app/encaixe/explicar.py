@@ -11,7 +11,7 @@ from app.encaixe.busca import Candidata
 from app.llm import LLM
 
 VALIDAS = {"verificada", "corrigida", "aproximada"}
-MAX_DESCRICAO = 2500
+MAX_DESCRICAO = 1500  # requirements come early in a posting; shorter prompts answer much faster on the free tier
 
 
 class Ponto(BaseModel):

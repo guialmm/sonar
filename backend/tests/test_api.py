@@ -149,3 +149,31 @@ async def test_explicacao_em_andamento_nao_e_paga_duas_vezes(api, llm, session):
     corpo = {"perfil": perfil, "paginas": PAGINAS, "vagas": ids}
     r1, r2 = await asyncio.gather(api.post("/api/encaixe/explicar", json=corpo), api.post("/api/encaixe/explicar", json=corpo))
     assert r1.json() == r2.json() and llm.chamadas["estruturado"] == 1
+
+
+async def test_exemplo_guardado_no_banco_e_visitante_nao(api, llm, session, monkeypatch):
+    from sqlalchemy import func, select
+
+    from app import exemplo
+    from app.models import ExplicacaoGuardada
+
+    demo = {"perfil": {**PERFIL, "senioridade": "junior"}, "paginas": PAGINAS, "habilidades_descartadas": [],
+            "evidencias_conferidas": 3, "evidencias_total": 4}
+    monkeypatch.setattr(exemplo, "exemplo", lambda: demo)
+    monkeypatch.setattr(exemplo, "chave_do_exemplo", lambda: exemplo.chave(demo["perfil"], demo["paginas"]))
+    assert (await api.get("/api/exemplo")).json()["perfil"]["titulo"] == PERFIL["titulo"]
+
+    await vagas(session)
+    ids = [c["vaga"]["id"] for c in (await api.post("/api/encaixe", json={"perfil": demo["perfil"]})).json()]
+    corpo = {"perfil": demo["perfil"], "paginas": demo["paginas"], "vagas": ids}
+    primeira = (await api.post("/api/encaixe/explicar", json=corpo)).json()
+    assert await session.scalar(select(func.count()).select_from(ExplicacaoGuardada)) == len(ids)
+
+    rotas.cache_explicacoes.clear()  # as after a restart: the demo comes from the database
+    antes = llm.chamadas["estruturado"]
+    assert (await api.post("/api/encaixe/explicar", json=corpo)).json() == primeira
+    assert llm.chamadas["estruturado"] == antes
+
+    visitante = {**corpo, "paginas": ["Outro currículo: Python, FastAPI e PostgreSQL. " * 5]}
+    await api.post("/api/encaixe/explicar", json=visitante)
+    assert await session.scalar(select(func.count()).select_from(ExplicacaoGuardada)) == len(ids)  # nothing new stored

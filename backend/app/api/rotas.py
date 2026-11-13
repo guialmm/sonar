@@ -1,6 +1,4 @@
 import asyncio
-import hashlib
-import json
 from collections import OrderedDict
 from typing import Annotated
 
@@ -12,7 +10,8 @@ from app.api.limite import Limite, ip
 from app.api.schemas import Candidata, CurriculoOut, EncaixeIn, Explicacao, ExplicarIn, Resumo, VagaOut, VagaResumo
 from app.citacoes.verificador import PaginaRef
 from app.core.db import get_session
-from app.encaixe import busca
+from app import exemplo
+from app.encaixe import busca, guardadas
 from app.encaixe.explicar import explicar
 from app.encaixe.nivel import nivel_da_vaga
 from app.llm import LLMErro, LLMIndisponivel, get_llm
@@ -25,7 +24,6 @@ Sessao = Annotated[AsyncSession, Depends(get_session)]
 # Free-tier LLM: a few dozen calls a day for everyone together.
 limite_curriculo = Limite(3, janela_s=600)
 limite_explicar = Limite(8, janela_s=600)
-MAX_PAGINA = 8000
 
 
 class Cache(OrderedDict):
@@ -49,10 +47,6 @@ cache_explicacoes = Cache()
 em_andamento: dict[tuple, asyncio.Task] = {}
 
 
-def chave_perfil(perfil: dict, paginas: list[str]) -> str:
-    return hashlib.sha256(json.dumps([perfil, paginas], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-
-
 def falha_llm(exc: Exception) -> HTTPException:
     if isinstance(exc, LLMIndisponivel):
         return HTTPException(503, "A IA gratuita está sobrecarregada agora. Tente de novo em instantes.")
@@ -62,6 +56,14 @@ def falha_llm(exc: Exception) -> HTTPException:
 @router.get("/health")
 async def health() -> dict:
     return {"ok": True}
+
+
+@router.get("/exemplo", response_model=CurriculoOut)
+async def curriculo_exemplo():
+    """The demo profile, for anyone who wants to see Sonar work before uploading a CV."""
+    if (e := exemplo.exemplo()) is None:
+        raise HTTPException(404, "sem exemplo")
+    return e
 
 
 @router.get("/resumo", response_model=Resumo)
@@ -116,10 +118,12 @@ async def encaixe(corpo: EncaixeIn, session: Sessao, llm=Depends(get_llm)):
 @router.post("/encaixe/explicar", response_model=list[Explicacao])
 async def explicar_vagas(corpo: ExplicarIn, request: Request, session: Sessao, llm=Depends(get_llm)):
     """Score and quoted reasons for a few postings. Cached per profile and posting."""
-    perfil = corpo.perfil.model_dump()
-    paginas_txt = [p[:MAX_PAGINA] for p in corpo.paginas]
-    base = chave_perfil(perfil, paginas_txt)
+    perfil, paginas_txt = exemplo.normalizar(corpo.perfil.model_dump(), corpo.paginas)
+    base = exemplo.chave(perfil, paginas_txt)
+    e_exemplo = base == exemplo.chave_do_exemplo()
     prontas = {i: cache_explicacoes[(base, i)] for i in corpo.vagas if (base, i) in cache_explicacoes}
+    if e_exemplo:  # computed ahead, after each collection
+        prontas |= {i: Explicacao(**d) for i, d in (await guardadas.ler(session, base, corpo.vagas)).items()}
     faltam = [i for i in corpo.vagas if i not in prontas]
     if faltam:
         vagas = (await session.scalars(select(Vaga).where(Vaga.id.in_(faltam)))).all()
@@ -136,10 +140,12 @@ async def explicar_vagas(corpo: ExplicarIn, request: Request, session: Sessao, l
             encaixes = await asyncio.shield(tarefa)  # a client that leaves doesn't cancel it for the others
         except LLMErro as exc:
             raise falha_llm(exc) from exc
-        for e in encaixes:
-            ex = Explicacao(vaga_id=e.candidata.vaga.id, nota=e.nota, resumo=e.resumo, fortes=e.fortes, lacunas=e.lacunas)
+        novas = [Explicacao(vaga_id=e.candidata.vaga.id, nota=e.nota, resumo=e.resumo, fortes=e.fortes, lacunas=e.lacunas) for e in encaixes]
+        for ex in novas:
             cache_explicacoes.guardar((base, ex.vaga_id), ex)
             prontas[ex.vaga_id] = ex
+        if e_exemplo:
+            await guardadas.guardar(session, base, [ex.model_dump() for ex in novas])
     return [prontas[i] for i in corpo.vagas if i in prontas]
 
 

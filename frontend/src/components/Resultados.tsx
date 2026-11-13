@@ -10,7 +10,9 @@ import { esquecer, useCurriculo } from "@/lib/sessao";
 
 import { Detalhe } from "./Detalhe";
 
-const PRIMEIRAS = 8; // explained right away; the rest when clicked
+// Explained right away, in small batches so the first scores arrive fast; the rest on click.
+const PRIMEIRAS = 8;
+const LOTE = 4;
 
 export function Resultados() {
   const cv = useCurriculo();
@@ -42,7 +44,11 @@ export function Resultados() {
         setCands(lista);
         if (lista.length) {
           setSelecionada(lista[0].vaga.id);
-          pedirExplicacao(c, lista.slice(0, PRIMEIRAS).map((x) => x.vaga.id));
+          const ids = lista.slice(0, PRIMEIRAS).map((x) => x.vaga.id);
+          // One batch after the other: the free tier answers a small prompt much sooner.
+          (async () => {
+            for (let i = 0; i < ids.length; i += LOTE) await pedirExplicacao(c, ids.slice(i, i + LOTE));
+          })();
         }
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Não deu para buscar as vagas agora."));
@@ -79,14 +85,14 @@ export function Resultados() {
     <div className="mx-auto max-w-[1440px] px-5 pb-16 sm:px-12">
       <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-linha py-4 text-sm">
         <p>
-          <b className="font-semibold">Seu perfil</b>{" "}
+          <b className="font-semibold">{cv.exemplo ? "Perfil de exemplo" : "Seu perfil"}</b>{" "}
           <span className="text-apagado">
             {p.titulo} · {SENIORIDADE[p.senioridade] ?? p.senioridade}
             {p.cidade ? ` · ${p.cidade}${p.estado ? `, ${p.estado}` : ""}` : ""} · {p.habilidades.length} habilidades conferidas no currículo
           </span>
         </p>
         <Link href="/" onClick={esquecer} className="text-apagado underline-offset-4 hover:text-tinta hover:underline">
-          Trocar currículo
+          {cv.exemplo ? "Usar o meu currículo" : "Trocar currículo"}
         </Link>
       </div>
 
