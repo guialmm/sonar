@@ -88,8 +88,9 @@ def pontuar(perfil: dict, vaga: Vaga, similaridade: float) -> Candidata:
 
 
 def consulta_texto(perfil: dict) -> str | None:
-    """"Python | fastapi | postgresql | …": the profile's skills and title words, any of them."""
-    termos = [h["nome"] for h in perfil.get("habilidades", [])] + (perfil.get("titulo") or "").split()
+    """"python | fastapi | postgresql | …": the profile's skills, any of them. Only skills: title
+    words like "desenvolvedor" or "júnior" match half the postings and drown the signal."""
+    termos = [h["nome"] for h in perfil.get("habilidades", [])]
     limpos = {re.sub(r"[^a-z0-9]", "", sem_acento(t).lower()) for t in termos}
     limpos = sorted(t for t in limpos if len(t) >= 2 and t not in {"de", "da", "do", "em", "e"})
     return " | ".join(limpos) or None

@@ -70,3 +70,16 @@ async def test_recalcular_republicacao_e_vaga_que_saiu_da_fonte(session):
     # 1, 2 and 3 are the same opening posted three times; QA is unique.
     assert "republicada" in {s["codigo"] for s in vagas["1"].sinais}
     assert vagas["4"].sinais == [] and vagas["4"].confianca == 70
+
+
+def test_serie_de_vagas_quase_iguais_e_empresa_anonima():
+    from app.confianca import titulo_base
+
+    assert titulo_base("Desenvolvedor(a) Java Júnior (Pagamentos via Pix)") == titulo_base("Desenvolvedor(a) Java Júnior (Notificações)")
+    assert titulo_base("Engenheiro de Software - Payments") == "engenheiro de software"
+    v = nova(empresa="Confidencial (vaga via Sylision)", titulo="Desenvolvedor(a) Java Júnior (Agendamento)")
+    nota, sinais = avaliar(v, Contexto(serie=6), AGORA)
+    assert codigos(sinais) == {"serie", "anonima"} and nota == 50
+    assert any("7 vagas quase iguais" in s.motivo for s in sinais)
+    assert "serie" not in codigos(avaliar(nova(), Contexto(serie=2), AGORA)[1])  # a few similar openings are normal
+    assert codigos(avaliar(nova(empresa="Stone"), Contexto(serie=200), AGORA)[1]) == set()  # a known employer: normal

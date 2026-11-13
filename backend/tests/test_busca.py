@@ -63,5 +63,5 @@ def test_regras_descartam_e_pontuam():
 def test_consulta_de_texto_do_perfil():
     perfil = {"titulo": "Desenvolvedor back-end Python", "habilidades": [{"nome": "C++"}, {"nome": "Node.js"}, {"nome": "FastAPI"}]}
     # "C++" becomes "c": one letter would match nearly everything, so it is left to the semantic side.
-    assert busca.consulta_texto(perfil) == "backend | desenvolvedor | fastapi | nodejs | python"
+    assert busca.consulta_texto(perfil) == "fastapi | nodejs"
     assert busca.consulta_texto({"habilidades": []}) is None

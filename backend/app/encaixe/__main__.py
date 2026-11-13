@@ -13,7 +13,7 @@ from app.core.db import SessionLocal, engine
 from app.encaixe import vetores
 from app.encaixe.busca import candidatas, texto_perfil
 from app.encaixe.explicar import explicar
-from app.llm import get_llm
+from app.llm import LLMIndisponivel, get_llm
 from app.perfil.servico import ler_pdf
 
 
@@ -26,7 +26,11 @@ async def main() -> None:
             perfil = json.loads(Path(sys.argv[2]).read_text())
             curriculo = ler_pdf(Path(sys.argv[3]).read_bytes())
             llm = get_llm()
-            [vetor] = await llm.embeddings([texto_perfil(perfil)], tipo="RETRIEVAL_QUERY")
+            try:
+                [vetor] = await llm.embeddings([texto_perfil(perfil)], tipo="RETRIEVAL_QUERY")
+            except LLMIndisponivel:
+                vetor = None
+                print("(sem cota de embeddings hoje: só palavras-chave)")
             cands = await candidatas(session, perfil, vetor, limite=20)
             print(f"{len(cands)} candidatas depois das regras; pedindo a explicação…\n")
             for e in await explicar(llm, curriculo, cands):

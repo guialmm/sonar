@@ -22,6 +22,15 @@ BASE = 70
 BANCO_DE_TALENTOS = re.compile(r"banco de talentos|talent pool|cadastro reserva|vagas? futuras|oportunidades futuras", re.I)
 SALARIO = re.compile(r"R\$\s?\d|sal[aá]rio:?\s*(de\s*)?R?\$?\s?\d|faixa salarial|\d{1,3}(\.\d{3})+\s*(a|-|até)\s*\d", re.I)
 DIRETO_DA_EMPRESA = {Fonte.greenhouse, Fonte.ashby, Fonte.lever}
+ANONIMA = re.compile(r"confidencial|n[aã]o informad|sigilos|empresa parceira|cliente (do|da)", re.I)
+
+
+def titulo_base(titulo: str) -> str:
+    """"Desenvolvedor(a) Java Júnior (Pagamentos via Pix)" → "desenvolvedor java junior": the
+    title without the detail that varies across a series of near-identical postings."""
+    t = re.sub(r"\(.*?\)|\[.*?\]", " ", titulo)
+    t = re.split(r"\s+[-–|:]\s+", t)[0]
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", sem_acento(t).lower()).split())
 
 
 @dataclass
@@ -37,6 +46,7 @@ class Contexto:
 
     republicacoes: int = 0  # other postings, same source, same company and title
     textos_iguais: int = 0  # other postings of the same company with this exact description
+    serie: int = 0  # other postings of the same advertiser whose titles differ only in a detail
 
 
 def hash_texto(texto: str) -> str:
@@ -75,6 +85,13 @@ def avaliar(v: Vaga, ctx: Contexto, agora: datetime) -> tuple[int, list[Sinal]]:
     if ctx.textos_iguais >= 5:
         sinais.append(Sinal("texto_padrao", -10, f"Texto idêntico ao de outras {ctx.textos_iguais} vagas da empresa"))
 
+    if ANONIMA.search(v.empresa):
+        sinais.append(Sinal("anonima", -10, "A empresa não se identifica"))
+        # Many near-identical titles are normal for a known employer (one per team, one per
+        # store); from an advertiser who won't say who is hiring, they look like a lead farm.
+        if ctx.serie >= 4:
+            sinais.append(Sinal("serie", -10, f"O mesmo anunciante anônimo publicou {ctx.serie + 1} vagas quase iguais"))
+
     if v.fonte in DIRETO_DA_EMPRESA:
         sinais.append(Sinal("direto_da_empresa", 10, "Publicada na página de carreira da própria empresa"))
 
@@ -88,6 +105,10 @@ def avaliar(v: Vaga, ctx: Contexto, agora: datetime) -> tuple[int, list[Sinal]]:
     return nota, sinais
 
 
+def ctx_republicacoes(por_assinatura: dict, v: Vaga) -> int:
+    return por_assinatura[(v.fonte, v.assinatura)] - 1
+
+
 async def recalcular(session: AsyncSession, agora: datetime | None = None) -> dict:
     """Scores every posting and marks the ones that left their source as closed."""
     agora = agora or datetime.now(UTC)
@@ -95,12 +116,15 @@ async def recalcular(session: AsyncSession, agora: datetime | None = None) -> di
 
     por_assinatura: dict[tuple, int] = {}
     por_texto: dict[tuple, int] = {}
+    por_serie: dict[tuple, int] = {}
     hashes = {}
     for v in vagas:
         por_assinatura[(v.fonte, v.assinatura)] = por_assinatura.get((v.fonte, v.assinatura), 0) + 1
         h = hash_texto(v.descricao)
         hashes[v.id] = h
         por_texto[(v.empresa.lower(), h)] = por_texto.get((v.empresa.lower(), h), 0) + 1
+        chave_serie = (v.empresa.lower(), titulo_base(v.titulo))
+        por_serie[chave_serie] = por_serie.get(chave_serie, 0) + 1
 
     # A posting the last complete, successful run of its source didn't see has been taken down.
     # (A partial run, e.g. Gupy for one term, proves nothing about the rest.)
@@ -113,6 +137,8 @@ async def recalcular(session: AsyncSession, agora: datetime | None = None) -> di
         ctx = Contexto(
             republicacoes=por_assinatura[(v.fonte, v.assinatura)] - 1,
             textos_iguais=por_texto[(v.empresa.lower(), hashes[v.id])] - 1,
+            # A series is several titles; exact reposts are already counted above.
+            serie=por_serie[(v.empresa.lower(), titulo_base(v.titulo))] - 1 - ctx_republicacoes(por_assinatura, v),
         )
         nota, sinais = avaliar(v, ctx, agora)
         v.confianca = nota
