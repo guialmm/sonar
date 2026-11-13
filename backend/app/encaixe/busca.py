@@ -7,7 +7,7 @@ top of this list goes to the model, which writes the reasons (app/encaixe/explic
 import re
 from dataclasses import dataclass, field
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.coleta.base import sem_acento
@@ -87,14 +87,40 @@ def pontuar(perfil: dict, vaga: Vaga, similaridade: float) -> Candidata:
     return c
 
 
-async def candidatas(session: AsyncSession, perfil: dict, vetor: list[float], limite: int = 25) -> list[Candidata]:
-    distancia = Vaga.embedding.cosine_distance(vetor)
-    linhas = (
-        await session.execute(
-            select(Vaga, distancia).where(Vaga.ativa, Vaga.embedding.is_not(None)).order_by(distancia).limit(CANDIDATAS)
-        )
-    ).all()
-    pontuadas = [pontuar(perfil, v, 1 - float(d)) for v, d in linhas]
+def consulta_texto(perfil: dict) -> str | None:
+    """"Python | fastapi | postgresql | …": the profile's skills and title words, any of them."""
+    termos = [h["nome"] for h in perfil.get("habilidades", [])] + (perfil.get("titulo") or "").split()
+    limpos = {re.sub(r"[^a-z0-9]", "", sem_acento(t).lower()) for t in termos}
+    limpos = sorted(t for t in limpos if len(t) >= 2 and t not in {"de", "da", "do", "em", "e"})
+    return " | ".join(limpos) or None
+
+
+async def candidatas(session: AsyncSession, perfil: dict, vetor: list[float] | None, limite: int = 25) -> list[Candidata]:
+    """Hybrid: nearest by meaning (when there is a vector) plus best by keywords. The keyword
+    side also covers postings not embedded yet (the free tier embeds ~1,000 a day) and days
+    the embedding quota runs out."""
+    similares: dict[int, tuple[Vaga, float]] = {}
+    if vetor is not None:
+        distancia = Vaga.embedding.cosine_distance(vetor)
+        for v, d in (
+            await session.execute(
+                select(Vaga, distancia).where(Vaga.ativa, Vaga.embedding.is_not(None)).order_by(distancia).limit(CANDIDATAS)
+            )
+        ).all():
+            similares[v.id] = (v, 1 - float(d))
+    if q := consulta_texto(perfil):
+        consulta = func.to_tsquery("simple", q)
+        rank = func.ts_rank_cd(Vaga.busca, consulta)
+        linhas = (
+            await session.execute(
+                select(Vaga, rank).where(Vaga.ativa, Vaga.busca.op("@@")(consulta)).order_by(rank.desc()).limit(CANDIDATAS)
+            )
+        ).all()
+        maior = max((float(r) for _, r in linhas), default=0) or 1
+        for v, r in linhas:
+            # Keyword-only matches get a similarity stand-in below what meaning usually scores.
+            similares.setdefault(v.id, (v, 0.45 + 0.3 * float(r) / maior))
+    pontuadas = [pontuar(perfil, v, sim) for v, sim in similares.values()]
     validas = [c for c in pontuadas if not c.motivos_descarte]
     validas.sort(key=lambda c: c.pontos, reverse=True)
     return validas[:limite]

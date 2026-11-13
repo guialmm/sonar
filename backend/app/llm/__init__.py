@@ -3,6 +3,7 @@ from app.llm.base import (
     LLM,
     AgenteLLM,
     Chamada,
+    CotaDiaria,
     Ferramenta,
     LLMErro,
     LLMIndisponivel,
@@ -13,7 +14,7 @@ from app.llm.base import (
 )
 
 __all__ = [
-    "LLM", "AgenteLLM", "Chamada", "Ferramenta", "LLMErro", "LLMIndisponivel", "Mensagem",
+    "LLM", "AgenteLLM", "Chamada", "CotaDiaria", "Ferramenta", "LLMErro", "LLMIndisponivel", "Mensagem",
     "Resposta", "RespostaAgente", "Uso", "get_llm",
 ]
 

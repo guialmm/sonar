@@ -21,6 +21,10 @@ class LLMIndisponivel(LLMErro):
     """Every model stayed overloaded or rate-limited through every retry."""
 
 
+class CotaDiaria(LLMIndisponivel):
+    """The free tier's daily quota is gone: retrying before tomorrow only wastes time."""
+
+
 @dataclass
 class Uso:
     modelo: str

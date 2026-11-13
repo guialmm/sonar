@@ -100,8 +100,8 @@ async def encaixe(corpo: EncaixeIn, session: Sessao, llm=Depends(get_llm)):
     perfil = corpo.perfil.model_dump()
     try:
         [vetor] = await llm.embeddings([busca.texto_perfil(perfil)], tipo="RETRIEVAL_QUERY")
-    except LLMErro as exc:
-        raise falha_llm(exc) from exc
+    except LLMIndisponivel:
+        vetor = None  # keyword search alone still works when the embedding quota is gone
     cands = await busca.candidatas(session, perfil, vetor, limite=corpo.limite)
     return [
         Candidata(vaga=VagaResumo.model_validate(c.vaga), afinidade=round(100 * c.similaridade), nivel=c.nivel, habilidades=c.habilidades)

@@ -116,3 +116,18 @@ async def test_cors_so_para_o_site(api):
     ok = await api.options("/api/health", headers={"Origin": "http://localhost:3003", **pre})
     assert ok.headers.get("access-control-allow-origin") == "http://localhost:3003"
     assert "access-control-allow-origin" not in (await api.options("/api/health", headers={"Origin": "https://x.example", **pre})).headers
+
+
+async def test_encaixe_sem_cota_de_embeddings_usa_palavras_chave(api, llm, session):
+    from app.llm import CotaDiaria
+
+    await vagas(session)
+    await session.execute(update(Vaga).values(embedding=None))  # nothing embedded yet
+    await session.commit()
+
+    async def sem_cota(textos, *, tipo):
+        raise CotaDiaria("acabou")
+
+    llm.embeddings = sem_cota
+    r = await api.post("/api/encaixe", json={"perfil": {**PERFIL, "senioridade": "junior"}})
+    assert r.status_code == 200 and len(r.json()) == 2  # found by "python", the ghost still out

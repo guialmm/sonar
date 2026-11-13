@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from app.llm.base import (
     Chamada,
+    CotaDiaria,
     Executor,
     Ferramenta,
     LLMErro,
@@ -238,6 +239,8 @@ class GeminiLLM:
                 except errors.APIError as exc:
                     if exc.code not in TRANSITORIOS:
                         raise LLMErro(f"embeddings: {exc.code} {exc.message}") from exc
+                    if exc.code == 429 and "per day" in (exc.message or "").lower():
+                        raise CotaDiaria("embeddings: cota diária do plano gratuito acabou") from exc
                     ultimo = str(exc.code)
                 # 429 here is the per-minute budget: a full minute brings it back.
                 await self.sleep(60 if ultimo == "429" else min(5 * 2**rodada, 60))

@@ -1,3 +1,4 @@
+from app.encaixe import busca
 from app.encaixe.busca import habilidades_na_vaga, mesmo_estado, pontuar
 from app.encaixe.nivel import nivel_da_vaga, penalidade
 from app.models import Fonte, Modalidade, Vaga
@@ -57,3 +58,10 @@ def test_regras_descartam_e_pontuam():
     assert pontuar(PERFIL, vaga(confianca=20), 0.9).motivos_descarte == ["confiança baixa"]
     # Same meaning, more trust: ranks higher.
     assert pontuar(PERFIL, vaga(confianca=90), 0.8).pontos > ok.pontos
+
+
+def test_consulta_de_texto_do_perfil():
+    perfil = {"titulo": "Desenvolvedor back-end Python", "habilidades": [{"nome": "C++"}, {"nome": "Node.js"}, {"nome": "FastAPI"}]}
+    # "C++" becomes "c": one letter would match nearly everything, so it is left to the semantic side.
+    assert busca.consulta_texto(perfil) == "backend | desenvolvedor | fastapi | nodejs | python"
+    assert busca.consulta_texto({"habilidades": []}) is None
