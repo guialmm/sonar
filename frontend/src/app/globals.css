@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warm sand and deep green: green means "fits", amber means "attention". */
+  --color-areia: #f3efe7;
+  --color-cartao: #fffdf9;
+  --color-tinta: #1d2b24;
+  --color-apagado: #6b7068;
+  --color-linha: #e2dacb;
+  --color-linha-forte: #cfc4b0;
+  --color-verde: #1f6f4a;
+  --color-verde-escuro: #185a3c;
+  --color-verde-suave: #e2efe7;
+  --color-ambar: #a8651a;
+  --color-ambar-suave: #f6ebdc;
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-areia);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+}
+
+::selection { background: var(--color-verde-suave); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
