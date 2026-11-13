@@ -131,3 +131,21 @@ async def test_encaixe_sem_cota_de_embeddings_usa_palavras_chave(api, llm, sessi
     llm.embeddings = sem_cota
     r = await api.post("/api/encaixe", json={"perfil": {**PERFIL, "senioridade": "junior"}})
     assert r.status_code == 200 and len(r.json()) == 2  # found by "python", the ghost still out
+
+
+async def test_explicacao_em_andamento_nao_e_paga_duas_vezes(api, llm, session):
+    import asyncio
+
+    await vagas(session)
+    perfil = {**PERFIL, "senioridade": "junior"}
+    ids = [c["vaga"]["id"] for c in (await api.post("/api/encaixe", json={"perfil": perfil})).json()]
+    original = llm.estruturado
+
+    async def devagar(**kw):
+        await asyncio.sleep(0.05)
+        return await original(**kw)
+
+    llm.estruturado = devagar
+    corpo = {"perfil": perfil, "paginas": PAGINAS, "vagas": ids}
+    r1, r2 = await asyncio.gather(api.post("/api/encaixe/explicar", json=corpo), api.post("/api/encaixe/explicar", json=corpo))
+    assert r1.json() == r2.json() and llm.chamadas["estruturado"] == 1

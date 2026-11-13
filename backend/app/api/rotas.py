@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 from collections import OrderedDict
@@ -43,6 +44,9 @@ class Cache(OrderedDict):
 
 
 cache_explicacoes = Cache()
+# The same explanation already being computed (a page reload, a double click): wait for it
+# instead of paying for a second model call.
+em_andamento: dict[tuple, asyncio.Task] = {}
 
 
 def chave_perfil(perfil: dict, paginas: list[str]) -> str:
@@ -118,13 +122,18 @@ async def explicar_vagas(corpo: ExplicarIn, request: Request, session: Sessao, l
     prontas = {i: cache_explicacoes[(base, i)] for i in corpo.vagas if (base, i) in cache_explicacoes}
     faltam = [i for i in corpo.vagas if i not in prontas]
     if faltam:
-        if not limite_explicar.permitir(ip(request)):
-            raise HTTPException(429, "Muitas explicações seguidas. Espere alguns minutos.")
         vagas = (await session.scalars(select(Vaga).where(Vaga.id.in_(faltam)))).all()
         cands = [busca.Candidata(v, 0.0, nivel_da_vaga(v.titulo, v.etiquetas)) for v in vagas]
         curriculo = [PaginaRef(i, 0, "Currículo", i, None, i, t) for i, t in enumerate(paginas_txt, start=1)]
+        chave = (base, tuple(sorted(faltam)))
+        tarefa = em_andamento.get(chave)
+        if tarefa is None:
+            if not limite_explicar.permitir(ip(request)):
+                raise HTTPException(429, "Muitas explicações seguidas. Espere alguns minutos.")
+            tarefa = em_andamento[chave] = asyncio.create_task(explicar(llm, curriculo, cands))
+            tarefa.add_done_callback(lambda _: em_andamento.pop(chave, None))
         try:
-            encaixes = await explicar(llm, curriculo, cands)
+            encaixes = await asyncio.shield(tarefa)  # a client that leaves doesn't cancel it for the others
         except LLMErro as exc:
             raise falha_llm(exc) from exc
         for e in encaixes:

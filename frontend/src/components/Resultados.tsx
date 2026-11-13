@@ -48,13 +48,15 @@ export function Resultados() {
       .catch((e) => setErro(e instanceof Error ? e.message : "Não deu para buscar as vagas agora."));
   }, [cv]);
 
-  // Explained postings by score; the rest keep the meaning-based order below them.
+  // Explained postings by score; the rest keep the server's order (meaning, skills, level,
+  // trust) below them.
   const ordenadas = useMemo(() => {
     if (!cands) return [];
+    const posicao = new Map(cands.map((c, i) => [c.vaga.id, i]));
     return [...cands].sort((a, b) => {
       const na = notas[a.vaga.id]?.nota ?? -1;
       const nb = notas[b.vaga.id]?.nota ?? -1;
-      return nb - na || b.afinidade - a.afinidade;
+      return nb - na || posicao.get(a.vaga.id)! - posicao.get(b.vaga.id)!;
     });
   }, [cands, notas]);
 
