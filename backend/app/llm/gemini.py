@@ -36,7 +36,7 @@ RESFRIAMENTO_S = 300
 MODELO_EMBEDDINGS = "gemini-embedding-001"
 DIMENSOES = 768  # truncated from 3072: plenty for job texts, a quarter of the storage
 LOTE_EMBEDDINGS = 100
-TOKENS_POR_MINUTO = 25_000  # free tier: 30k/min; margin for the estimate being off
+TOKENS_POR_MINUTO = 20_000  # free tier: 30k/min; margin for the estimate being off
 FORA_DE_USO: dict[str, float] = {}
 
 
@@ -204,13 +204,13 @@ class GeminiLLM:
 
     async def embeddings(self, textos: list[str], *, tipo: str = "RETRIEVAL_DOCUMENT") -> list[list[float]]:
         """One vector per text. The free tier allows 30k tokens a minute for embeddings: texts
-        go in batches under that budget (~4 characters per token), one batch per minute window.
+        go in batches under that budget (~3 characters per token in Portuguese), one batch per minute window.
         RETRIEVAL_DOCUMENT for what is searched (postings), RETRIEVAL_QUERY for what searches."""
         config = types.EmbedContentConfig(output_dimensionality=DIMENSOES, task_type=tipo)
         lotes: list[list[str]] = [[]]
         tokens = 0
         for t in textos:
-            estimado = len(t) // 4 + 8
+            estimado = len(t) // 3 + 8  # Portuguese tokenizes denser than English (~3 chars/token)
             if lotes[-1] and (tokens + estimado > TOKENS_POR_MINUTO or len(lotes[-1]) >= LOTE_EMBEDDINGS):
                 lotes.append([])
                 tokens = 0

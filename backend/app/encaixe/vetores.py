@@ -1,12 +1,15 @@
 """Embeddings of the postings, recomputed only when the text changes."""
 
 import hashlib
+import logging
 
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.encaixe.busca import CONFIANCA_MINIMA
 from app.models import Modalidade, Vaga
+
+log = logging.getLogger(__name__)
 
 MAX_DESCRICAO = 1000  # the opening says what the job is; the rest is mostly benefits and boilerplate
 LOTE = 100
@@ -47,4 +50,5 @@ async def atualizar(session: AsyncSession, llm, limite: int | None = None) -> in
             v.embedding, v.embedding_hash = vetor, hash_de(t)
         await session.commit()  # progress survives a quota error halfway
         feitas += len(lote)
+        log.info("vetores: %d de %d", feitas, len(vagas))
     return feitas
