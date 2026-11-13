@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     }
     ashby_empresas: dict[str, str] = {"nubank": "Nubank"}
 
+    # Browser origins allowed to call the API directly (LLM calls outlast a proxy's patience).
+    cors_origens: list[str] = ["http://localhost:3003"]
+
     # LLM (Gemini free tier; models tried in order when one is overloaded)
     gemini_api_key: str = ""
     # The lite model is the last resort: weaker, but almost never overloaded.
