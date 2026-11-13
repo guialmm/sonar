@@ -1,0 +1,100 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sonar · 2-editorial</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&display=swap">
+<style>*{box-sizing:border-box;margin:0;padding:0} ul{list-style:none} a{cursor:pointer;text-decoration:none}
+body{min-height:100vh;-webkit-font-smoothing:antialiased}
+.topo{display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;padding:20px 48px}
+.marca{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.01em}
+.placar{display:flex;gap:24px;font-size:13px}
+.tela{display:grid;grid-template-columns:minmax(360px,1fr) 1.35fr;gap:40px;padding:28px 48px 48px;max-width:1440px}
+.lista h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.item{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:14px 16px;margin-bottom:8px;cursor:pointer}
+.item-txt{display:flex;flex-direction:column;gap:3px;min-width:0} .item-txt b{font-weight:600;font-size:15px;line-height:1.3} .item-txt small{font-size:12.5px}
+.fantasma{margin-top:22px;padding:14px 16px;font-size:13.5px;line-height:1.5} .rotulo{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.cabeca{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:start}
+.empresa{font-size:13px;letter-spacing:.06em;text-transform:uppercase} h1{margin:6px 0 12px;line-height:1.15}
+.resumo{font-size:17px;line-height:1.55;max-width:56ch}
+h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:30px 0 12px}
+.ponto{display:grid;gap:4px;padding:12px 0} .ponto b{font-weight:600}
+.cita{font-size:13.5px;line-height:1.45} .cita em{font-style:normal;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
+.sinais{display:flex;flex-wrap:wrap;gap:8px} .sinais li{font-size:13px;padding:6px 12px}
+.acoes{display:flex;gap:12px;margin-top:30px} .acoes a{padding:13px 22px;font-weight:600;font-size:15px}
+@keyframes subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.item,.ponto{animation:subir .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*90ms + 150ms)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{--papel:#f7f6f2;--tinta:#111;--apagado:#6d6a63;--linha:#dcd8cf;--sinal:#ff4f1f}
+body{background:var(--papel);color:var(--tinta);font-family:Geist,sans-serif}
+.topo{border-bottom:1px solid var(--tinta)} .marca{font:400 30px "Instrument Serif";letter-spacing:0} .logo{width:10px;height:10px;background:var(--sinal);border-radius:50%}
+.perfil{font-size:14px;color:var(--apagado)} .placar{color:var(--apagado)} .placar b{color:var(--tinta);font-variant-numeric:tabular-nums}
+.lista h2,h3{color:var(--tinta);font-weight:600} .rotulo,.cita em{color:var(--apagado)}
+.lista ul{border-top:1px solid var(--tinta)} .item{border-bottom:1px solid var(--linha);padding:16px 4px;transition:background .25s}
+.item:hover{background:#efede6} .item.ativo{background:var(--tinta);color:var(--papel)} .item.ativo small{color:#bdbab2}
+.nota-mini{font:400 36px "Instrument Serif";font-variant-numeric:tabular-nums} .item.ativo .nota-mini{color:var(--sinal)} .item-txt small{color:var(--apagado)}
+.conf{font-size:12px;color:var(--apagado)} .item.ativo .conf{color:#bdbab2}
+.fantasma{border:1px solid var(--linha)} .fantasma .rotulo{color:var(--sinal)} .fantasma b{text-decoration:line-through;text-decoration-color:var(--sinal)} .motivo{color:var(--apagado)}
+.empresa{color:var(--sinal);font-weight:600} h1{font:400 46px/1.05 "Instrument Serif";letter-spacing:-.01em}
+.resumo{font-size:18px;color:#2b2a27} h3{border-top:1px solid var(--tinta);padding-top:10px;transform-origin:left;animation:linha .9s cubic-bezier(.2,.8,.2,1) both .3s}
+@keyframes linha{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.ponto{border-bottom:1px solid var(--linha)} .cita{color:#3d3b37} .lacuna b{color:var(--sinal)}
+.sinais li{border:1px solid var(--tinta);border-radius:999px} .primario{background:var(--tinta);color:var(--papel)} .primario:hover{background:var(--sinal)} .secundario{border:1px solid var(--tinta);color:var(--tinta)}
+.numeral{text-align:right} .numeral b{display:block;font:400 132px/0.8 "Instrument Serif";color:var(--sinal);font-variant-numeric:tabular-nums;animation:subir .8s cubic-bezier(.2,.8,.2,1) both}
+.numeral small{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--apagado)}</style></head><body><header class="topo">
+  <div class="marca"><span class="logo"></span>Sonar</div>
+  <div class="perfil">Desenvolvedor back-end Python · estágio ou júnior · Santa Rita do Sapucaí, MG</div>
+  <div class="placar"><span><b data-num="3119">3.119</b> vagas lidas hoje</span><span><b data-num="541">541</b> escondidas por parecerem fantasma</span></div>
+</header>
+<main class="tela">
+  <section class="lista">
+    <h2>Para você hoje</h2>
+    <ul><li class="item ativo nova" style="--i:0">
+  <span class="nota-mini" data-num="88">88</span>
+  <span class="item-txt"><b>Desenvolvedor(a) Back-end Júnior · Python / Agentic AI</b><small>MKdigital · Remoto · Comunidade backend-br</small></span>
+  <span class="conf" title="Confiança">95</span>
+</li><li class="item" style="--i:1">
+  <span class="nota-mini" data-num="79">79</span>
+  <span class="item-txt"><b>Desenvolvedor Full Stack Júnior</b><small>BIP Brasil · Remoto · Gupy</small></span>
+  <span class="conf" title="Confiança">75</span>
+</li><li class="item" style="--i:2">
+  <span class="nota-mini" data-num="71">71</span>
+  <span class="item-txt"><b>Pessoa Desenvolvedora de IA/RPA Júnior</b><small>BIP Brasil · Remoto · Gupy</small></span>
+  <span class="conf" title="Confiança">75</span>
+</li><li class="item" style="--i:3">
+  <span class="nota-mini" data-num="64">64</span>
+  <span class="item-txt"><b>Desenvolvedor de Automação e IA Jr</b><small>Libbs Farmacêutica · Remoto · Gupy</small></span>
+  <span class="conf" title="Confiança">75</span>
+</li></ul>
+    <aside class="fantasma">
+      <p class="rotulo">Escondida</p>
+      <p><b>Banco de Talentos - Desenvolvedor</b> · Linx</p>
+      <p class="motivo">Aberta há 2.074 dias · banco de talentos, não uma vaga</p>
+    </aside>
+  </section>
+  <section class="detalhe">
+    <div class="cabeca">
+      <div>
+        <p class="empresa">MKdigital · Remoto</p>
+        <h1>Desenvolvedor(a) Back-end Júnior · Python / Agentic AI</h1>
+        <p class="resumo">Pede o que você já mostra: back-end em Python com APIs e agentes de IA, e aceita quem está terminando a faculdade.</p>
+      </div>
+      <div class="numeral"><b data-num="88">88</b><small>de encaixe</small></div>
+    </div>
+    <h3>Por que encaixa</h3><ul class="pontos"><li class="ponto" style="--i:0"><b>Back-end com APIs e dados</b>
+  <span class="cita"><em>Vaga</em> “foco em backend, APIs, dados e agentes inteligentes”</span>
+  <span class="cita"><em>Você</em> “FastAPI, PostgreSQL e React”</span></li><li class="ponto" style="--i:1"><b>Agentes de IA</b>
+  <span class="cita"><em>Vaga</em> “agentes inteligentes”</span>
+  <span class="cita"><em>Você</em> “LLMs com chamadas de ferramenta”</span></li><li class="ponto" style="--i:2"><b>Início de carreira aceito</b>
+  <span class="cita"><em>Vaga</em> “Experiência profissional anterior não é obrigatória”</span>
+  <span class="cita"><em>Você</em> “Busco estágio ou posição júnior”</span></li></ul>
+    <h3>O que falta</h3><ul class="pontos"><li class="ponto lacuna"><b>Engenharia industrial</b><span class="cita"><em>Vaga</em> “aplicações de engenharia industrial”</span></li></ul>
+    <h3>Confiança 95</h3><ul class="sinais"><li>Verificada pelos mantenedores da comunidade</li><li>Publicada nesta semana</li><li>Informa a faixa salarial</li></ul>
+    <div class="acoes"><a class="primario">Abrir a vaga</a><a class="secundario">Escrever minha mensagem</a></div>
+  </section>
+</main><script>
+// Numbers count up once, like an instrument settling on a reading.
+for (const el of document.querySelectorAll("[data-num]")) {
+  const alvo = +el.dataset.num, ini = performance.now(), dur = 1100;
+  const fmt = (n) => n.toLocaleString("pt-BR");
+  const passo = (t) => { const k = Math.min(1, (t - ini) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(Math.round(alvo * e)); if (k < 1) requestAnimationFrame(passo); };
+  requestAnimationFrame(passo);
+}
+</script></body></html>
