@@ -66,6 +66,7 @@ class GeminiLLM:
         self.fora_de_uso = {} if fora_de_uso is None else fora_de_uso
         self.sleep = sleep
         self.relogio = relogio
+        self._janela_embeddings: float | None = None
 
     def _fila(self) -> list[str]:
         """Models in order of preference, the ones cooling down skipped (unless all are)."""
@@ -216,13 +217,13 @@ class GeminiLLM:
             lotes[-1].append(t)
             tokens += estimado
         vetores: list[list[float]] = []
-        janela = None
         for lote in (lt for lt in lotes if lt):
-            if janela is not None:  # wait out the minute the previous batch used
-                await self.sleep(max(0.0, 60 - (self.relogio() - janela)))
+            # The minute window belongs to the client, not to this call: the next call waits too.
+            if self._janela_embeddings is not None:
+                await self.sleep(max(0.0, 60 - (self.relogio() - self._janela_embeddings)))
             ultimo = ""
             for rodada in range(self.max_rodadas):
-                janela = self.relogio()
+                self._janela_embeddings = self.relogio()
                 try:
                     r = await asyncio.wait_for(
                         self.client.aio.models.embed_content(model=MODELO_EMBEDDINGS, contents=lote, config=config),

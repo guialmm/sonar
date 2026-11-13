@@ -179,3 +179,19 @@ async def test_embeddings_respeitam_tokens_por_minuto():
     grande = "x" * 4000  # ~1000 tokens each
     await llm.embeddings([grande] * 60)
     assert all(n * 1008 <= g.TOKENS_POR_MINUTO for n in lotes) and sum(lotes) == 60 and len(lotes) == 3
+
+
+async def test_janela_de_um_minuto_vale_entre_chamadas():
+    esperas = []
+
+    async def anota(s):
+        esperas.append(s)
+
+    async def embed(*, model, contents, config):
+        return SimpleNamespace(embeddings=[SimpleNamespace(values=[0.0]) for _ in contents])
+
+    fake = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(embed_content=embed)))
+    llm = GeminiLLM("k", ["m"], client=fake, sleep=anota, relogio=lambda: 100.0)
+    await llm.embeddings(["a"])
+    await llm.embeddings(["b"])  # a separate call, same minute
+    assert esperas == [60.0]
