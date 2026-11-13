@@ -1,0 +1,22 @@
+# The API on Render's free plan (it sleeps after 15 idle minutes; the first request then
+# takes ~50 s). Collection runs in GitHub Actions, not here.
+services:
+  - type: web
+    name: sonar-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: ENV
+        value: prod
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGENS # JSON list, e.g. ["https://sonar.vercel.app"]
+        sync: false
