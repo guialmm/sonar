@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.coleta.base import VagaColetada
 from app.coleta.servico import salvar
@@ -24,7 +24,9 @@ def coletada(n, descricao="Python e SQL"):
 
 async def test_so_recalcula_o_que_mudou(session):
     agora = datetime.now(UTC)
-    await salvar(session, [coletada(1), coletada(2)], agora)
+    await salvar(session, [coletada(1), coletada(2), coletada(3)], agora)
+    await session.execute(update(Vaga).values(confianca=70))
+    await session.execute(update(Vaga).where(Vaga.id_externo == "3").values(confianca=10))  # ghost: never embedded
     await session.commit()
     llm = LLMVetores()
     assert await atualizar(session, llm) == 2

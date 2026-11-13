@@ -149,8 +149,33 @@ async def test_embeddings_em_lotes_com_retentativa():
     async def sem_espera(_):
         pass
 
-    llm = GeminiLLM("k", ["m"], client=fake, sleep=sem_espera)
+    esperas = []
+
+    async def anota(s):
+        esperas.append(s)
+
+    llm = GeminiLLM("k", ["m"], client=fake, sleep=anota, relogio=lambda: 0.0)
     textos = ["ab"] * (g.LOTE_EMBEDDINGS + 3)
     vetores = await llm.embeddings(textos)
     assert len(vetores) == len(textos) and vetores[0] == [2.0]
-    assert chamadas == [g.LOTE_EMBEDDINGS, 3, 3]  # the second batch failed once and was retried
+    assert chamadas == [g.LOTE_EMBEDDINGS, 3, 3]  # the second batch failed once (503) and was retried
+    assert 60 in esperas  # the next batch waited for the minute window
+
+
+async def test_embeddings_respeitam_tokens_por_minuto():
+    from app.llm import gemini as g
+
+    lotes = []
+
+    async def embed(*, model, contents, config):
+        lotes.append(len(contents))
+        return SimpleNamespace(embeddings=[SimpleNamespace(values=[0.0]) for _ in contents])
+
+    async def sem_espera(_):
+        pass
+
+    fake = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(embed_content=embed)))
+    llm = GeminiLLM("k", ["m"], client=fake, sleep=sem_espera)
+    grande = "x" * 4000  # ~1000 tokens each
+    await llm.embeddings([grande] * 60)
+    assert all(n * 1008 <= g.TOKENS_POR_MINUTO for n in lotes) and sum(lotes) == 60 and len(lotes) == 3

@@ -25,6 +25,9 @@ Regras:
 - Use só o que está escrito. Não deduza habilidades que o texto não menciona.
 - Toda habilidade e toda experiência precisa de uma evidência: a página [p. N] e um trecho
   copiado literalmente do currículo (mesmas palavras, mesma ordem).
+- Liste TODAS as habilidades que o currículo cita, em qualquer seção (resumo, experiências,
+  projetos, lista de habilidades): linguagens, frameworks, bancos, infraestrutura, ferramentas,
+  IA. Um currículo técnico costuma ter de 20 a 40. Uma por item, sem repetir.
 - Habilidades com nome canônico e curto ("FastAPI", não "framework FastAPI para APIs").
   Inclua competências não técnicas quando o currículo as mostrar (atendimento, gestão de equipe).
 - Senioridade pela experiência profissional real (empregos, estágios, freelas). Projetos pessoais
