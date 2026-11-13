@@ -19,6 +19,10 @@ class Fonte(str, enum.Enum):
     greenhouse = "greenhouse"
     lever = "lever"
     ashby = "ashby"
+    smartrecruiters = "smartrecruiters"
+    himalayas = "himalayas"  # remote boards open to Brazil
+    remotive = "remotive"
+    adzuna = "adzuna"  # Brazilian search aggregator (needs a free API key)
 
 
 class Modalidade(str, enum.Enum):

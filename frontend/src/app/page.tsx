@@ -34,8 +34,8 @@ export default function Inicio() {
           As vagas que encaixam no seu currículo. <span className="text-verde">E o aviso quando a vaga é fantasma.</span>
         </h1>
         <p className="mt-6 max-w-[58ch] text-lg leading-relaxed text-[#3a4a41]">
-          O Sonar lê vagas da Gupy, das comunidades do GitHub e das páginas de carreira de empresas como Nubank, Stone e
-          QuintoAndar. Você manda o currículo; ele mostra onde você encaixa, com o trecho da vaga e do seu currículo que provam
+          O Sonar lê vagas da Gupy, das comunidades do GitHub, de quadros de vagas remotas e das páginas de carreira de
+          empresas como Nubank, BTG Pactual, Stone, CI&T e Bosch. Você manda o currículo; ele mostra onde você encaixa, com o trecho da vaga e do seu currículo que provam
           cada motivo.
         </p>
         <Suspense fallback={<div className="mt-10 h-[92px] max-w-xl border-t border-linha" />}>

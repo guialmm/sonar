@@ -21,7 +21,8 @@ from app.models import Coleta, Fonte, Vaga
 BASE = 70
 BANCO_DE_TALENTOS = re.compile(r"banco de talentos|talent pool|cadastro reserva|vagas? futuras|oportunidades futuras", re.I)
 SALARIO = re.compile(r"R\$\s?\d|sal[aá]rio:?\s*(de\s*)?R?\$?\s?\d|faixa salarial|\d{1,3}(\.\d{3})+\s*(a|-|até)\s*\d", re.I)
-DIRETO_DA_EMPRESA = {Fonte.greenhouse, Fonte.ashby, Fonte.lever}
+SEM_VER = timedelta(days=14)
+DIRETO_DA_EMPRESA = {Fonte.greenhouse, Fonte.ashby, Fonte.lever, Fonte.smartrecruiters}
 ANONIMA = re.compile(r"confidencial|n[aã]o informad|sigilos|empresa parceira|cliente (do|da)", re.I)
 
 
@@ -144,7 +145,10 @@ async def recalcular(session: AsyncSession, agora: datetime | None = None) -> di
         v.confianca = nota
         v.sinais = [s.__dict__ for s in sinais]
         corte = ultima_ok.get(v.fonte)
-        v.ativa = not (corte and v.vista_ultimo_em < corte - timedelta(minutes=5))
+        # Sources read only in part (the newest pages of a remote board, a few search terms)
+        # never prove a posting is gone: two weeks without seeing it does.
+        sumiu = corte and v.vista_ultimo_em < corte - timedelta(minutes=5)
+        v.ativa = not (sumiu or v.vista_ultimo_em < agora - SEM_VER)
         resumo["avaliadas"] += 1
         resumo["encerradas"] += not v.ativa
         resumo["baixa"] += nota < 40

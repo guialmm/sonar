@@ -14,7 +14,7 @@ from app.coleta.base import sem_acento
 from app.encaixe.nivel import nivel_da_vaga, penalidade
 from app.models import Modalidade, Vaga
 
-CANDIDATAS = 400  # nearest postings by meaning, before the rules
+CANDIDATAS = 600  # nearest postings by meaning, before the rules
 CONFIANCA_MINIMA = 40
 
 UF = {

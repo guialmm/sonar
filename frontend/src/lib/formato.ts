@@ -13,6 +13,10 @@ export const FONTE: Record<string, string> = {
   greenhouse: "Página de carreira",
   ashby: "Página de carreira",
   lever: "Página de carreira",
+  smartrecruiters: "Página de carreira",
+  himalayas: "Himalayas (vagas remotas)",
+  remotive: "Remotive (vagas remotas)",
+  adzuna: "Adzuna",
 };
 
 export const SENIORIDADE: Record<string, string> = {

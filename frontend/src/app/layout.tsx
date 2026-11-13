@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
         <main className="flex-1">{children}</main>
         <footer className="mx-auto w-full max-w-[1440px] px-5 py-8 text-xs leading-relaxed text-apagado sm:px-12">
-          Vagas da Gupy, das comunidades do GitHub e das páginas de carreira das empresas. O currículo é lido e descartado: nada
+          Vagas da Gupy, das comunidades do GitHub, de quadros de vagas remotas e das páginas de carreira das empresas. O currículo é lido e descartado: nada
           fica guardado. Projeto de portfólio.
         </footer>
       </body>

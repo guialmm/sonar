@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     gupy_termos: list[str] = [
         "desenvolvedor", "programador", "engenheiro de software", "software", "back-end", "front-end",
         "full stack", "python", "java", "javascript", "dados", "devops", "qa", "estágio ti", "suporte ti",
+        "mobile", "android", "ios", "react", "node", ".net", "c#", "php", "golang", "typescript", "cloud",
+        "infraestrutura", "segurança da informação", "redes", "analista de sistemas", "engenheiro de dados",
+        "cientista de dados", "analista de dados", "bi", "machine learning", "inteligência artificial", "ux",
+        "product manager", "product owner", "scrum", "arquiteto de software", "sre", "testes", "sap",
+        "salesforce", "help desk", "estágio desenvolvimento", "trainee tecnologia", "tech lead",
     ]
     # Community job boards kept as GitHub issues. Some went quiet years ago with issues still
     # open: they stay in, and the ghost-job detector marks those postings.
@@ -35,8 +40,21 @@ class Settings(BaseSettings):
         "stone": "Stone", "c6bank": "C6 Bank", "inter": "Banco Inter", "xpinc": "XP Inc.",
         "quintoandar": "QuintoAndar", "gympass": "Wellhub (Gympass)", "vtex": "VTEX", "ebanx": "EBANX",
         "jusbrasil": "Jusbrasil", "wildlifestudios": "Wildlife Studios", "rdstation": "RD Station",
+        "btgpactual": "BTG Pactual", "getnet": "Getnet", "blip": "Blip", "flash": "Flash",
     }
-    ashby_empresas: dict[str, str] = {"nubank": "Nubank"}
+    ashby_empresas: dict[str, str] = {"nubank": "Nubank", "warren": "Warren"}
+    lever_empresas: dict[str, str] = {"ciandt": "CI&T", "neon": "Neon"}
+    # Global employers: only their Brazilian openings are read (the API filters by country).
+    smartrecruiters_empresas: dict[str, str] = {
+        "BoschGroup": "Bosch", "Experian": "Serasa Experian", "Wise": "Wise", "NielsenIQ": "NielsenIQ", "ServiceNow": "ServiceNow",
+    }
+    # Remote boards: Himalayas lists ~6,000 openings open to Brazil, 20 a page, newest first.
+    himalayas_paginas: int = 150
+    # Adzuna (Brazilian aggregator): free key at developer.adzuna.com; skipped when empty.
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+    adzuna_termos: list[str] = ["desenvolvedor", "programador", "engenheiro de software", "analista de sistemas", "dados", "suporte técnico", "devops", "qa"]
+    adzuna_paginas: int = 5
 
     # Browser origins allowed to call the API directly (LLM calls outlast a proxy's patience).
     cors_origens: list[str] = ["http://localhost:3003"]

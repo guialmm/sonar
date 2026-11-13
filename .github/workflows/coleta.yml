@@ -1,5 +1,5 @@
 # Every morning: collect every source, re-score trust, embed new postings (up to the free
-# tier's 1,000 a day) and explain the demo profile's best postings ahead of visitors.
+# tier's 1,000 a day).
 # A failure is GitHub e-mailing the repository owner.
 name: coleta
 
@@ -27,6 +27,9 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GITHUB_TOKEN: ${{ github.token }}
+      # Optional: Adzuna is skipped while these secrets don't exist.
+      ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+      ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

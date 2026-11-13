@@ -60,7 +60,7 @@ export async function enviarCurriculo(arquivo: File): Promise<Curriculo> {
 
 export async function buscarEncaixe(perfil: Perfil): Promise<Candidata[]> {
   return corpo(
-    await fetch(`${API}/api/encaixe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ perfil, limite: 30 }) }),
+    await fetch(`${API}/api/encaixe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ perfil, limite: 150 }) }),
   );
 }
 

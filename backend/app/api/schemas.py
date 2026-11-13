@@ -22,7 +22,7 @@ class CurriculoOut(BaseModel):
 
 class EncaixeIn(BaseModel):
     perfil: Perfil
-    limite: int = Field(default=30, ge=1, le=60)
+    limite: int = Field(default=30, ge=1, le=200)
 
 
 class VagaResumo(Modelo):

@@ -13,6 +13,8 @@ import { Detalhe } from "./Detalhe";
 // Explained right away, in small batches so the first scores arrive fast; the rest on click.
 const PRIMEIRAS = 8;
 const LOTE = 4;
+// The search sends up to 150 at once (no model involved, so it's cheap); the list shows them 30 at a time.
+const POR_VEZ = 30;
 
 export function Resultados() {
   const cv = useCurriculo();
@@ -22,6 +24,7 @@ export function Resultados() {
   const [erros, setErros] = useState<Record<number, string>>({});
   const [selecionada, setSelecionada] = useState<number | null>(null);
   const [erro, setErro] = useState("");
+  const [visiveis, setVisiveis] = useState(POR_VEZ);
 
   async function pedirExplicacao(c: Curriculo, ids: number[]) {
     setExplicando((s) => new Set([...s, ...ids]));
@@ -106,13 +109,13 @@ export function Resultados() {
             <h2 className="mb-3.5 text-xs font-medium uppercase tracking-[0.12em] text-apagado">Para você hoje</h2>
             <LayoutGroup>
               <ul className="space-y-2">
-                {ordenadas.map((c, i) => (
+                {ordenadas.slice(0, visiveis).map((c, i) => (
                   <motion.li
                     key={c.vaga.id}
                     layout
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ layout: { type: "spring", stiffness: 380, damping: 34 }, delay: Math.min(i, 10) * 0.05 }}
+                    transition={{ layout: { type: "spring", stiffness: 380, damping: 34 }, delay: Math.min(i % POR_VEZ, 10) * 0.05 }}
                   >
                     <button
                       onClick={() => {
@@ -136,6 +139,17 @@ export function Resultados() {
                 ))}
               </ul>
             </LayoutGroup>
+            {ordenadas.length > visiveis && (
+              <button
+                onClick={() => setVisiveis((n) => n + POR_VEZ)}
+                className="mt-4 w-full rounded-[10px] border border-linha-forte px-6 py-3 text-[15px] font-semibold transition-colors hover:border-tinta"
+              >
+                Ver mais vagas <span className="font-normal text-apagado">({ordenadas.length - visiveis} restantes)</span>
+              </button>
+            )}
+            <p className="mt-3 text-center text-xs text-apagado">
+              {Math.min(visiveis, ordenadas.length)} de {ordenadas.length} vagas que passaram pelos filtros de nível, local e confiança
+            </p>
           </section>
           <section className="lg:sticky lg:top-6 lg:self-start">
             <AnimatePresence mode="wait">
@@ -143,8 +157,8 @@ export function Resultados() {
                 <Detalhe
                   key={atual.vaga.id}
                   candidata={atual}
-                explicacao={notas[atual.vaga.id]}
-                explicando={explicando.has(atual.vaga.id)}
+                  explicacao={notas[atual.vaga.id]}
+                  explicando={explicando.has(atual.vaga.id)}
                   erro={erros[atual.vaga.id]}
                 />
               )}

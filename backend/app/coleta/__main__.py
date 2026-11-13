@@ -3,7 +3,9 @@
     python -m app.coleta gupy            # all configured terms
     python -m app.coleta gupy python     # just these terms
     python -m app.coleta github          # community boards (GITHUB_TOKEN raises the rate limit)
-    python -m app.coleta empresas        # career pages on Greenhouse and Ashby
+    python -m app.coleta empresas        # career pages on Greenhouse, Ashby, Lever and SmartRecruiters
+    python -m app.coleta remotos         # Himalayas and Remotive (remote, open to Brazil)
+    python -m app.coleta adzuna          # needs ADZUNA_APP_ID and ADZUNA_APP_KEY
     python -m app.coleta todas
     python -m app.coleta status
 """
@@ -14,7 +16,7 @@ import sys
 import httpx
 from sqlalchemy import func, select, update
 
-from app.coleta import empresas, github, gupy
+from app.coleta import empresas, github, gupy, remotos
 from app.coleta.servico import coletar_fonte
 from app.core.config import settings
 from app.core.db import SessionLocal, engine
@@ -50,12 +52,36 @@ async def main() -> None:
                 for fonte, coletor, lista in (
                     (Fonte.greenhouse, empresas.coletar_greenhouse, settings.greenhouse_empresas),
                     (Fonte.ashby, empresas.coletar_ashby, settings.ashby_empresas),
+                    (Fonte.lever, empresas.coletar_lever, settings.lever_empresas),
+                    (Fonte.smartrecruiters, empresas.coletar_smartrecruiters, settings.smartrecruiters_empresas),
                 ):
                     falhas = []
                     c = await coletar_fonte(session, fonte, coletor(http, lista, falhas))
                     await marcar_incompleta(session, c, falhas)
                     print(f"{fonte.value}: {c.vistas} vistas, {c.novas} novas" + (f" · falharam: {', '.join(falhas)}" if falhas else ""))
-        if comando not in ("gupy", "github", "empresas", "todas", "status"):
+        if comando in ("remotos", "todas"):
+            async with httpx.AsyncClient(headers=headers, timeout=settings.coleta_timeout_s) as http:
+                for fonte, vagas in (
+                    (Fonte.himalayas, remotos.coletar_himalayas(http, settings.himalayas_paginas)),
+                    (Fonte.remotive, remotos.coletar_remotive(http)),
+                ):
+                    try:
+                        c = await coletar_fonte(session, fonte, vagas, completa=fonte != Fonte.himalayas)
+                        print(f"{fonte.value}: {c.vistas} vistas, {c.novas} novas")
+                    except httpx.HTTPError as exc:  # one board down doesn't stop the others
+                        print(f"{fonte.value}: falhou ({exc})")
+        if comando in ("adzuna", "todas"):
+            if settings.adzuna_app_id and settings.adzuna_app_key:
+                async with httpx.AsyncClient(headers=headers, timeout=settings.coleta_timeout_s) as http:
+                    try:
+                        c = await coletar_fonte(session, Fonte.adzuna, remotos.coletar_adzuna(
+                            http, settings.adzuna_app_id, settings.adzuna_app_key, settings.adzuna_termos, settings.adzuna_paginas), completa=False)
+                        print(f"adzuna: {c.vistas} vistas, {c.novas} novas")
+                    except httpx.HTTPError as exc:
+                        print(f"adzuna: falhou ({exc})")
+            else:
+                print("adzuna: sem chave (ADZUNA_APP_ID/ADZUNA_APP_KEY), pulada")
+        if comando not in ("gupy", "github", "empresas", "remotos", "adzuna", "todas", "status"):
             sys.exit(f"comando desconhecido: {comando}")
         if comando == "status":
             por_fonte = (await session.execute(select(Vaga.fonte, func.count()).group_by(Vaga.fonte))).all()
