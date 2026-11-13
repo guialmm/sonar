@@ -81,3 +81,17 @@ def test_adzuna():
     v = remotos.ler_adzuna(job)
     assert v.titulo == "Desenvolvedor Python Remoto" and v.estado == "São Paulo" and v.cidade == "Campinas"
     assert v.modalidade == Modalidade.remoto and v.fonte == Fonte.adzuna
+
+
+async def test_himalayas_limite_guarda_o_que_leu():
+    def responder(request: httpx.Request):
+        if request.url.params["page"] == "1":
+            return httpx.Response(200, json={"jobs": fixture("himalayas-br.json")["jobs"] * 7})
+        return httpx.Response(429)
+
+    async def sem_pausa(_):
+        pass
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as http:
+        vagas = [v async for v in remotos.coletar_himalayas(http, 10, pausa=sem_pausa, sleep=sem_espera)]
+    assert len(vagas) == 21

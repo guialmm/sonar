@@ -59,15 +59,22 @@ def ler_himalayas(job: dict) -> VagaColetada:
 async def coletar_himalayas(
     http: httpx.AsyncClient, max_paginas: int, *, pausa: Callable[[float], Awaitable[None]] = asyncio.sleep, **kw
 ) -> AsyncIterator[VagaColetada]:
-    """Newest first; stops at `max_paginas` (20 each) or at the end of the list."""
+    """Newest first; stops at `max_paginas` (20 each), at the end of the list, or when the API
+    says "enough for now" (429 even after the backoff): what was read so far still counts."""
     for pagina in range(1, max_paginas + 1):
-        corpo = await pegar_json(http, HIMALAYAS, params={"country": "BR", "page": pagina}, **kw)
+        try:
+            corpo = await pegar_json(http, HIMALAYAS, params={"country": "BR", "page": pagina}, **kw)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code != 429 or pagina == 1:
+                raise
+            log.warning("himalayas: limite de requisições na página %d; fica para amanhã", pagina)
+            return
         jobs = corpo.get("jobs") or []
         for job in jobs:
             yield ler_himalayas(job)
         if len(jobs) < HIMALAYAS_POR_PAGINA:
             break
-        await pausa(0.4)  # polite: a public API with no key
+        await pausa(1.0)  # polite: a public API with no key
 
 
 def ler_remotive(job: dict) -> VagaColetada | None:

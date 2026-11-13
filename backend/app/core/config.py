@@ -49,7 +49,7 @@ class Settings(BaseSettings):
         "BoschGroup": "Bosch", "Experian": "Serasa Experian", "Wise": "Wise", "NielsenIQ": "NielsenIQ", "ServiceNow": "ServiceNow",
     }
     # Remote boards: Himalayas lists ~6,000 openings open to Brazil, 20 a page, newest first.
-    himalayas_paginas: int = 150
+    himalayas_paginas: int = 120
     # Adzuna (Brazilian aggregator): free key at developer.adzuna.com; skipped when empty.
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
