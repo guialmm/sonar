@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Boolean, Computed, DateTime, Enum, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Computed, DateTime, Enum, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import Mapped, mapped_column
@@ -99,17 +99,3 @@ class Coleta(Base):
     erro: Mapped[str | None] = mapped_column(Text)
     # False when run for a subset (some terms, some boards): it can't tell what was taken down.
     completa: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
-
-
-class ExplicacaoGuardada(TimestampMixin, Base):
-    """Explanations for the demo profile only, computed ahead (after each collection) so the
-    "see an example" button answers at once. Visitors' explanations are never stored: they
-    quote the visitor's CV."""
-
-    __tablename__ = "explicacoes_exemplo"
-    __table_args__ = (UniqueConstraint("perfil", "vaga_id"),)
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    perfil: Mapped[str] = mapped_column(String(64))  # hash of the demo profile and CV text
-    vaga_id: Mapped[int] = mapped_column(ForeignKey("vagas.id", ondelete="CASCADE"))
-    dados: Mapped[dict] = mapped_column(JSONB)

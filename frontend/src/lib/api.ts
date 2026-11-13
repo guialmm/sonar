@@ -16,7 +16,6 @@ export type Perfil = {
 };
 
 export type Curriculo = {
-  exemplo?: boolean; // the demo profile, not the visitor's own CV
   perfil: Perfil;
   paginas: string[];
   habilidades_descartadas: string[];
@@ -57,10 +56,6 @@ export async function enviarCurriculo(arquivo: File): Promise<Curriculo> {
   const dados = new FormData();
   dados.append("arquivo", arquivo);
   return corpo(await fetch(`${API}/api/curriculo`, { method: "POST", body: dados }));
-}
-
-export async function curriculoExemplo(): Promise<Curriculo> {
-  return { ...(await corpo<Curriculo>(await fetch("/api/exemplo"))), exemplo: true };
 }
 
 export async function buscarEncaixe(perfil: Perfil): Promise<Candidata[]> {

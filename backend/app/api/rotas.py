@@ -1,4 +1,6 @@
 import asyncio
+import hashlib
+import json
 from collections import OrderedDict
 from typing import Annotated
 
@@ -10,12 +12,12 @@ from app.api.limite import Limite, ip
 from app.api.schemas import Candidata, CurriculoOut, EncaixeIn, Explicacao, ExplicarIn, Resumo, VagaOut, VagaResumo
 from app.citacoes.verificador import PaginaRef
 from app.core.db import get_session
-from app import exemplo
-from app.encaixe import busca, guardadas
+from app.encaixe import busca
 from app.encaixe.explicar import explicar
 from app.encaixe.nivel import nivel_da_vaga
 from app.llm import LLMErro, LLMIndisponivel, get_llm
 from app.models import Coleta, Vaga
+from app.perfil.schemas import Perfil
 from app.perfil.servico import CurriculoInvalido, extrair_perfil, ler_pdf
 
 router = APIRouter(prefix="/api")
@@ -47,6 +49,19 @@ cache_explicacoes = Cache()
 em_andamento: dict[tuple, asyncio.Task] = {}
 
 
+MAX_PAGINA = 8000
+
+
+def normalizar(perfil: dict, paginas: list[str]) -> tuple[dict, list[str]]:
+    """What the API works with: the profile as validated, each page cut to size."""
+    return Perfil.model_validate(perfil).model_dump(), [p[:MAX_PAGINA] for p in paginas]
+
+
+def chave_do_perfil(perfil: dict, paginas: list[str]) -> str:
+    """Identifies a (profile, CV text) pair without keeping either."""
+    return hashlib.sha256(json.dumps([perfil, paginas], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+
 def falha_llm(exc: Exception) -> HTTPException:
     if isinstance(exc, LLMIndisponivel):
         return HTTPException(503, "A IA gratuita está sobrecarregada agora. Tente de novo em instantes.")
@@ -56,14 +71,6 @@ def falha_llm(exc: Exception) -> HTTPException:
 @router.get("/health")
 async def health() -> dict:
     return {"ok": True}
-
-
-@router.get("/exemplo", response_model=CurriculoOut)
-async def curriculo_exemplo():
-    """The demo profile, for anyone who wants to see Sonar work before uploading a CV."""
-    if (e := exemplo.exemplo()) is None:
-        raise HTTPException(404, "sem exemplo")
-    return e
 
 
 @router.get("/resumo", response_model=Resumo)
@@ -118,12 +125,9 @@ async def encaixe(corpo: EncaixeIn, session: Sessao, llm=Depends(get_llm)):
 @router.post("/encaixe/explicar", response_model=list[Explicacao])
 async def explicar_vagas(corpo: ExplicarIn, request: Request, session: Sessao, llm=Depends(get_llm)):
     """Score and quoted reasons for a few postings. Cached per profile and posting."""
-    perfil, paginas_txt = exemplo.normalizar(corpo.perfil.model_dump(), corpo.paginas)
-    base = exemplo.chave(perfil, paginas_txt)
-    e_exemplo = base == exemplo.chave_do_exemplo()
+    perfil, paginas_txt = normalizar(corpo.perfil.model_dump(), corpo.paginas)
+    base = chave_do_perfil(perfil, paginas_txt)
     prontas = {i: cache_explicacoes[(base, i)] for i in corpo.vagas if (base, i) in cache_explicacoes}
-    if e_exemplo:  # computed ahead, after each collection
-        prontas |= {i: Explicacao(**d) for i, d in (await guardadas.ler(session, base, corpo.vagas)).items()}
     faltam = [i for i in corpo.vagas if i not in prontas]
     if faltam:
         vagas = (await session.scalars(select(Vaga).where(Vaga.id.in_(faltam)))).all()
@@ -144,8 +148,6 @@ async def explicar_vagas(corpo: ExplicarIn, request: Request, session: Sessao, l
         for ex in novas:
             cache_explicacoes.guardar((base, ex.vaga_id), ex)
             prontas[ex.vaga_id] = ex
-        if e_exemplo:
-            await guardadas.guardar(session, base, [ex.model_dump() for ex in novas])
     return [prontas[i] for i in corpo.vagas if i in prontas]
 
 

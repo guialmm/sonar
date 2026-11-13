@@ -85,14 +85,14 @@ export function Resultados() {
     <div className="mx-auto max-w-[1440px] px-5 pb-16 sm:px-12">
       <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-linha py-4 text-sm">
         <p>
-          <b className="font-semibold">{cv.exemplo ? "Perfil de exemplo" : "Seu perfil"}</b>{" "}
+          <b className="font-semibold">Seu perfil</b>{" "}
           <span className="text-apagado">
             {p.titulo} · {SENIORIDADE[p.senioridade] ?? p.senioridade}
             {p.cidade ? ` · ${p.cidade}${p.estado ? `, ${p.estado}` : ""}` : ""} · {p.habilidades.length} habilidades conferidas no currículo
           </span>
         </p>
         <Link href="/" onClick={esquecer} className="text-apagado underline-offset-4 hover:text-tinta hover:underline">
-          {cv.exemplo ? "Usar o meu currículo" : "Trocar currículo"}
+          Trocar currículo
         </Link>
       </div>
 

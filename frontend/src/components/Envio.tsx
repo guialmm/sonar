@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { curriculoExemplo, enviarCurriculo } from "@/lib/api";
+import { enviarCurriculo } from "@/lib/api";
 import { guardar } from "@/lib/sessao";
 
 // What actually happens while the model reads the CV, shown in order instead of a spinner.
@@ -22,16 +22,6 @@ export function Envio() {
     const t = setInterval(() => setEtapa((e) => Math.min(e + 1, ETAPAS.length - 1)), 9000);
     return () => clearInterval(t);
   }, [estado]);
-
-  async function verExemplo() {
-    try {
-      guardar(await curriculoExemplo());
-      router.push("/vagas");
-    } catch {
-      setEstado("erro");
-      setErro("O exemplo não está disponível agora.");
-    }
-  }
 
   async function enviar(arquivo?: File | null) {
     if (!arquivo) return;
@@ -98,12 +88,6 @@ export function Envio() {
               Escolher PDF
             </button>
             <input ref={entrada} type="file" accept="application/pdf" hidden onChange={(e) => enviar(e.target.files?.[0])} />
-            <button
-              onClick={verExemplo}
-              className="mt-3 w-full rounded-[10px] border border-linha-forte px-6 py-3 text-[15px] font-semibold transition-colors hover:border-tinta"
-            >
-              Ver com um currículo de exemplo
-            </button>
             {estado === "erro" && (
               <p role="alert" className="mt-4 text-sm text-ambar">
                 {erro}
