@@ -1,6 +1,6 @@
 """Remote-work boards with open APIs: Himalayas (filtered to openings a person in Brazil can
 take) and Remotive (worldwide or Latin America only). Plus Adzuna, a Brazilian job search
-aggregator, when its free API key is set.
+aggregator, only when its (paid) API key is set.
 
 Aggregators repost what companies publish elsewhere: a posting here gets no "straight from
 the company" bonus in the ghost-job detector."""

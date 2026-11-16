@@ -50,7 +50,8 @@ class Settings(BaseSettings):
     }
     # Remote boards: Himalayas lists ~6,000 openings open to Brazil, 20 a page, newest first.
     himalayas_paginas: int = 120
-    # Adzuna (Brazilian aggregator): free key at developer.adzuna.com; skipped when empty.
+    # Adzuna (Brazilian aggregator): its API now needs a paid plan, so it stays off unless
+    # ADZUNA_APP_ID and ADZUNA_APP_KEY are set.
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
     adzuna_termos: list[str] = ["desenvolvedor", "programador", "engenheiro de software", "analista de sistemas", "dados", "suporte técnico", "devops", "qa"]
