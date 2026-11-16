@@ -44,14 +44,17 @@ async def test_lever_sem_quadro_conta_como_falha():
 
 
 def test_himalayas_real():
-    vagas = [remotos.ler_himalayas(j) for j in fixture("himalayas-br.json")["jobs"]]
+    jobs = fixture("himalayas-br.json")["jobs"]
+    assert remotos.ler_himalayas(jobs[0] | {"locationRestrictions": []}) is None  # "anywhere": too often one city abroad
+    vagas = [remotos.ler_himalayas(j | {"locationRestrictions": ["Brazil"]}) for j in jobs]
     assert all(v.fonte == Fonte.himalayas and v.modalidade == Modalidade.remoto for v in vagas)
     assert all(v.url.startswith("https://himalayas.app/companies/") and "?" not in v.url for v in vagas)
     assert all(v.publicada_em and v.prazo and v.prazo > v.publicada_em for v in vagas)
 
 
 async def test_himalayas_para_na_ultima_pagina():
-    paginas = {1: fixture("himalayas-br.json")["jobs"] * 7, 2: fixture("himalayas-br.json")["jobs"][:1]}  # 21, then 1
+    jobs = [j | {"locationRestrictions": ["Brazil"]} for j in fixture("himalayas-br.json")["jobs"]]
+    paginas = {1: jobs * 7, 2: jobs[:1]}  # 21, then 1
 
     def responder(request: httpx.Request):
         return httpx.Response(200, json={"jobs": paginas.get(int(request.url.params["page"]), [])[:20]})
@@ -86,7 +89,7 @@ def test_adzuna():
 async def test_himalayas_limite_guarda_o_que_leu():
     def responder(request: httpx.Request):
         if request.url.params["page"] == "1":
-            return httpx.Response(200, json={"jobs": fixture("himalayas-br.json")["jobs"] * 7})
+            return httpx.Response(200, json={"jobs": [j | {"locationRestrictions": ["Brazil"]} for j in fixture("himalayas-br.json")["jobs"]] * 7})
         return httpx.Response(429)
 
     async def sem_pausa(_):

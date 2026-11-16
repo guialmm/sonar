@@ -33,8 +33,12 @@ def de_epoch(segundos: int | float | None) -> datetime | None:
     return datetime.fromtimestamp(segundos, UTC) if segundos else None
 
 
-def ler_himalayas(job: dict) -> VagaColetada:
+def ler_himalayas(job: dict) -> VagaColetada | None:
+    """None unless Brazil is named: "anywhere" postings often turn out to be for one city
+    abroad ("Full Stack Developer - Hyderabad")."""
     restricoes = job.get("locationRestrictions") or []
+    if "Brazil" not in restricoes:
+        return None
     url = job.get("guid") or job["applicationLink"].split("?")[0]
     salario = ""
     if job.get("minSalary") and job.get("currency"):
@@ -47,7 +51,6 @@ def ler_himalayas(job: dict) -> VagaColetada:
         empresa=" ".join((job.get("companyName") or "").split()) or "Empresa não informada",
         descricao="\n\n".join(t for t in (texto_limpo(job.get("description")), salario) if t),
         modalidade=Modalidade.remoto,
-        # Open to Brazil by the search filter: an empty list means anywhere.
         pais="Brasil" if restricoes == ["Brazil"] else None,
         publicada_em=de_epoch(job.get("pubDate")),
         prazo=de_epoch(job.get("expiryDate")),
@@ -71,7 +74,8 @@ async def coletar_himalayas(
             return
         jobs = corpo.get("jobs") or []
         for job in jobs:
-            yield ler_himalayas(job)
+            if (v := ler_himalayas(job)) is not None:
+                yield v
         if len(jobs) < HIMALAYAS_POR_PAGINA:
             break
         await pausa(1.0)  # polite: a public API with no key
