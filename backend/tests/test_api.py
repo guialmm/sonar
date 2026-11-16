@@ -149,3 +149,16 @@ async def test_explicacao_em_andamento_nao_e_paga_duas_vezes(api, llm, session):
     corpo = {"perfil": perfil, "paginas": PAGINAS, "vagas": ids}
     r1, r2 = await asyncio.gather(api.post("/api/encaixe/explicar", json=corpo), api.post("/api/encaixe/explicar", json=corpo))
     assert r1.json() == r2.json() and llm.chamadas["estruturado"] == 1
+
+
+async def test_mesma_vaga_publicada_duas_vezes_aparece_uma(api, llm, session):
+    copias = [
+        VagaColetada(fonte=Fonte.gupy, id_externo=i, url=f"https://x/{i}", titulo="Desenvolvedor Python Júnior",
+                     empresa="Acme", descricao="Precisamos de Python e FastAPI. " * 20, modalidade=Modalidade.remoto)
+        for i in ("a", "b")
+    ]
+    await salvar(session, copias, datetime.now(UTC))
+    await session.execute(update(Vaga).values(confianca=80, embedding=[0.1] * 768))
+    await session.commit()
+    r = await api.post("/api/encaixe", json={"perfil": {**PERFIL, "senioridade": "junior"}})
+    assert len(r.json()) == 1

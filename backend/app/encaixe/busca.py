@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import defer
 
 from app.coleta.base import sem_acento
 from app.encaixe.nivel import nivel_da_vaga, penalidade
@@ -16,6 +17,9 @@ from app.models import Modalidade, Vaga
 
 CANDIDATAS = 600  # nearest postings by meaning, before the rules
 CONFIANCA_MINIMA = 40
+# Hundreds of rows per search, and the database may be an ocean away from the API: leave out
+# the columns the ranking never reads (the source's raw JSON, the vector, the text index).
+LEVE = (defer(Vaga.raw), defer(Vaga.embedding), defer(Vaga.busca))
 
 UF = {
     "AC": "acre", "AL": "alagoas", "AP": "amapa", "AM": "amazonas", "BA": "bahia", "CE": "ceara", "DF": "distrito federal",
@@ -105,7 +109,7 @@ async def candidatas(session: AsyncSession, perfil: dict, vetor: list[float] | N
         distancia = Vaga.embedding.cosine_distance(vetor)
         for v, d in (
             await session.execute(
-                select(Vaga, distancia).where(Vaga.ativa, Vaga.embedding.is_not(None)).order_by(distancia).limit(CANDIDATAS)
+                select(Vaga, distancia).options(*LEVE).where(Vaga.ativa, Vaga.embedding.is_not(None)).order_by(distancia).limit(CANDIDATAS)
             )
         ).all():
             similares[v.id] = (v, 1 - float(d))
@@ -114,7 +118,7 @@ async def candidatas(session: AsyncSession, perfil: dict, vetor: list[float] | N
         rank = func.ts_rank_cd(Vaga.busca, consulta)
         linhas = (
             await session.execute(
-                select(Vaga, rank).where(Vaga.ativa, Vaga.busca.op("@@")(consulta)).order_by(rank.desc()).limit(CANDIDATAS)
+                select(Vaga, rank).options(*LEVE).where(Vaga.ativa, Vaga.busca.op("@@")(consulta)).order_by(rank.desc()).limit(CANDIDATAS)
             )
         ).all()
         maior = max((float(r) for _, r in linhas), default=0) or 1
@@ -124,4 +128,10 @@ async def candidatas(session: AsyncSession, perfil: dict, vetor: list[float] | N
     pontuadas = [pontuar(perfil, v, sim) for v, sim in similares.values()]
     validas = [c for c in pontuadas if not c.motivos_descarte]
     validas.sort(key=lambda c: c.pontos, reverse=True)
-    return validas[:limite]
+    # The same opening posted twice (two ids, or two sources): only the best-placed copy.
+    unicas, vistas = [], set()
+    for c in validas:
+        if c.vaga.assinatura not in vistas:
+            vistas.add(c.vaga.assinatura)
+            unicas.append(c)
+    return unicas[:limite]
