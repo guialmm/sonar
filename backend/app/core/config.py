@@ -63,6 +63,8 @@ class Settings(BaseSettings):
     # LLM (Gemini free tier; models tried in order when one is overloaded)
     gemini_api_key: str = ""
     # The lite model is the last resort: weaker, but almost never overloaded.
+    # Longest a visitor waits for one model answer, retries included (embeddings don't count).
+    llm_prazo_s: float = 90
     gemini_modelos: list[str] = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
 
     @field_validator("database_url")

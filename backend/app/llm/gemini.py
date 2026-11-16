@@ -52,6 +52,8 @@ class GeminiLLM:
         # fall through to the next model instead of hanging. A 70k-token edital takes ~1 min.
         timeout_s: float = 150,
         timeout_agente_s: float = 60,  # agent turns: a few pages of context at most
+        # A whole call, retries included: someone on the site is waiting. None = no limit.
+        prazo_s: float | None = None,
         fora_de_uso: dict[str, float] | None = None,
         client: genai.Client | None = None,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
@@ -64,6 +66,7 @@ class GeminiLLM:
         self.max_rodadas = max_rodadas
         self.timeout_s = timeout_s
         self.timeout_agente_s = timeout_agente_s
+        self.prazo_s = prazo_s
         self.fora_de_uso = {} if fora_de_uso is None else fora_de_uso
         self.sleep = sleep
         self.relogio = relogio
@@ -78,14 +81,21 @@ class GeminiLLM:
     async def _gerar(self, contents, config: types.GenerateContentConfig, timeout_s: float, espera_base: float):
         """One call with model fallback; returns (response, model, seconds)."""
         ultimo = ""
+        fim = self.relogio() + self.prazo_s if self.prazo_s else None
+
+        def resta() -> float:
+            return fim - self.relogio() if fim is not None else float("inf")
+
         for rodada in range(self.max_rodadas):
             # Fall through the models in order of preference before sleeping.
             for modelo in self._fila():
+                if resta() <= 1:
+                    raise LLMIndisponivel(f"sem resposta dentro do prazo de {self.prazo_s:.0f}s (último: {ultimo})")
                 inicio = self.relogio()
                 try:
                     r = await asyncio.wait_for(
                         self.client.aio.models.generate_content(model=modelo, contents=contents, config=config),
-                        timeout_s,
+                        min(timeout_s, resta()),
                     )
                     return r, modelo, self.relogio() - inicio
                 except TimeoutError:
@@ -99,7 +109,10 @@ class GeminiLLM:
                 log.info("gemini %s fora por %ss (%s)", modelo, RESFRIAMENTO_S, ultimo)
                 self.fora_de_uso[modelo] = self.relogio() + RESFRIAMENTO_S
             if rodada + 1 < self.max_rodadas:
-                await self.sleep(min(espera_base * 2**rodada, 90) + random.uniform(0, 3))
+                espera = min(espera_base * 2**rodada, 90) + random.uniform(0, 3)
+                if espera >= resta():
+                    break  # waiting would blow the deadline: give up now
+                await self.sleep(espera)
         raise LLMIndisponivel(f"todos os modelos falharam {self.max_rodadas}x (último: {ultimo})")
 
     async def estruturado(self, *, sistema: str, conteudo: str, esquema: type[T]) -> Resposta[T]:

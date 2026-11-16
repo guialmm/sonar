@@ -195,3 +195,18 @@ async def test_janela_de_um_minuto_vale_entre_chamadas():
     await llm.embeddings(["a"])
     await llm.embeddings(["b"])  # a separate call, same minute
     assert esperas == [60.0]
+
+
+async def test_prazo_total_desiste_em_vez_de_esperar_mais():
+    # Clock moves only when we "sleep": the first wait (~10-13 s) fits a 20 s deadline,
+    # the second (~20-23 s) doesn't, so the call gives up after two rounds.
+    agora = [0.0]
+
+    async def sleep(s):
+        agora[0] += s
+
+    fake = FakeGenai(*[erro(503)] * 10)
+    g = GeminiLLM("k", ["novo", "estavel"], max_rodadas=4, client=fake, sleep=sleep, relogio=lambda: agora[0], prazo_s=20)
+    with pytest.raises(LLMIndisponivel):
+        await g.estruturado(sistema="s", conteudo="c", esquema=Nota)
+    assert len(fake.models_called) == 4 and agora[0] < 20

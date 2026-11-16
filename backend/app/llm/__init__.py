@@ -24,4 +24,4 @@ def get_llm():  # GeminiLLM: implements both LLM and AgenteLLM
 
     if not settings.gemini_api_key:
         raise RuntimeError("GEMINI_API_KEY ausente no .env")
-    return GeminiLLM(settings.gemini_api_key, settings.gemini_modelos, fora_de_uso=FORA_DE_USO)
+    return GeminiLLM(settings.gemini_api_key, settings.gemini_modelos, fora_de_uso=FORA_DE_USO, prazo_s=settings.llm_prazo_s)
